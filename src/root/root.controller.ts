@@ -48,6 +48,7 @@ export class RootController {
     ) {
         this.rootService.checkFolders()
         // this.logger.checkLogFiles()
+        this.rootService.InitDB()
     }
 
     @Get('/')
