@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        "src/**/*.js": {
+          "when": "$(basename).ts"
+        },
+        "**/*.js.map": {
+          "when": "$(basename)"
+        }
+      },
+
+      "editor.formatOnSave": true
+}

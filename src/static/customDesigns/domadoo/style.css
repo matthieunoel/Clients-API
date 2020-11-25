@@ -1,0 +1,22 @@
+#carte {
+    background-color: whitesmoke;
+}
+
+#header {
+    color: white;
+    background-color: rgb(109, 96, 166);
+}
+
+#body {
+    color: black;
+    background-color: whitesmoke;
+}
+
+#footer {
+    color: black;
+    background-color: whitesmoke;
+}
+
+#TopText p {
+    color: rgba(0, 0, 0, 0.35);
+}
