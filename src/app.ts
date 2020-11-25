@@ -21,7 +21,7 @@ const app = createExpressServer({
   controllers: [RootController]
 })
 
-app.use('/spec', express.static('src/global/settings/ARM-settings'))
+// app.use('/spec', express.static('src/global/settings/ARM-settings'))
 app.use('/static', express.static('src/static'))
 
 app.listen(Config.Port, Config.Ip)

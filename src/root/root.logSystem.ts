@@ -73,7 +73,7 @@ export class Logger {
 
             const month = this.extendNumber(parseInt(('0' + (new Date(Date.now()).getMonth() + 1)).slice(-2), 10), 2)
             const year = this.extendNumber(new Date(Date.now()).getFullYear(), 4)
-            const file: string = `./log/facial-server-${year}-${month}.log`
+            const file: string = `./log/${year}-${month}.log`
 
             let text = `${level} [${this.getDate()}] ${message}\r\n`
             await fsPromise.appendFile(file, text)

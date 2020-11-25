@@ -1,45 +1,46 @@
 {
-  "name": "(F)acial-server",
-  "version": "0.0.34",
-  "description": "Server for company access control a bit safe.",
-  "main": "src/app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "release": "standard-version -a && git push --follow-tags origin master",
-    "build": "tsc -p ./",
-    "start": "sudo npm run build ; nodemon"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@gitlab.everial.com:doclab/facial-server.git"
-  },
-  "author": "Matthieu NOEL",
-  "license": "ISC",
-  "dependencies": {
-    "@types/body-parser": "^1.19.0",
-    "@types/multer": "^1.4.2",
-    "better-sqlite3": "^6.0.1",
-    "body-parser": "^1.19.0",
-    "class-transformer": "^0.2.3",
-    "class-validator": "^0.11.0",
-    "cors": "^2.8.5",
-    "ejs": "^3.0.1",
-    "express": "^4.17.1",
-    "multer": "^1.4.2",
-    "pdf-to-printer": "^1.2.0",
-    "puppeteer": "^2.1.1",
-    "reflect-metadata": "^0.1.13",
-    "routing-controllers": "^0.8.1-alpha.2",
-    "typedi": "^0.8.0",
-    "typescript": "^3.7.5",
-    "uuid": "^3.4.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.2",
-    "@types/node": "^13.7.1",
-    "@types/puppeteer": "^2.0.0",
-    "node-gyp": "^6.1.0",
-    "standard-version": "^7.1.0",
-    "tslint": "^6.0.0"
-  }
+    "name": "Node_REST_API",
+    "version": "0.0.2",
+    "description": "Server for company access control a bit safe.",
+    "main": "src/app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "release": "standard-version -a && git push --follow-tags origin master",
+        "build": "tsc -p ./",
+        "start-linux": "sudo npm run build ; nodemon",
+        "start-wnd": "npm run build && nodemon"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@gitlab.everial.com:doclab/facial-server.git"
+    },
+    "author": "Matthieu NOEL",
+    "license": "ISC",
+    "dependencies": {
+        "@types/body-parser": "^1.19.0",
+        "@types/multer": "^1.4.2",
+        "better-sqlite3": "^6.0.1",
+        "body-parser": "^1.19.0",
+        "class-transformer": "^0.2.3",
+        "class-validator": "^0.11.0",
+        "cors": "^2.8.5",
+        "ejs": "^3.0.1",
+        "express": "^4.17.1",
+        "multer": "^1.4.2",
+        "pdf-to-printer": "^1.2.0",
+        "puppeteer": "^2.1.1",
+        "reflect-metadata": "^0.1.13",
+        "routing-controllers": "^0.8.1-alpha.2",
+        "typedi": "^0.8.0",
+        "typescript": "^3.7.5",
+        "uuid": "^3.4.0"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.2",
+        "@types/node": "^13.7.1",
+        "@types/puppeteer": "^2.0.0",
+        "node-gyp": "^6.1.0",
+        "standard-version": "^7.1.0",
+        "tslint": "^6.0.0"
+    }
 }
