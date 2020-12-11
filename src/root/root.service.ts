@@ -93,6 +93,12 @@ export class RootService {
                 let conditions: string = ''
                 let errors: IError[] = []
 
+                guid = decodeURIComponent(guid)
+                first = decodeURIComponent(first)
+                last = decodeURIComponent(last)
+                street = decodeURIComponent(street)
+                city = decodeURIComponent(city)
+
                 if (isNaN(id) && id !== undefined) {
                     errors.push({
                         code: 21,
@@ -138,42 +144,42 @@ export class RootService {
                 }
                 if (guid !== undefined) {
                     if (conditions === '') {
-                        conditions = ` WHERE guid='${guid}'`
+                        conditions = ` WHERE guid='${this.formatStrForSQL(guid)}'`
                     }
                     else {
-                        conditions += ` AND guid='${guid}'`
+                        conditions += ` AND guid='${this.formatStrForSQL(guid)}'`
                     }
                 }
                 if (first !== undefined) {
                     if (conditions === '') {
-                        conditions = ` WHERE first like '%${first}%'`
+                        conditions = ` WHERE first like '%${this.formatStrForSQL(first)}%'`
                     }
                     else {
-                        conditions += ` AND first like '%${first}%'`
+                        conditions += ` AND first like '%${this.formatStrForSQL(first)}%'`
                     }
                 }
                 if (last !== undefined) {
                     if (conditions === '') {
-                        conditions = ` WHERE last like '%${last}%'`
+                        conditions = ` WHERE last like '%${this.formatStrForSQL(last)}%'`
                     }
                     else {
-                        conditions += ` AND last like '%${last}%'`
+                        conditions += ` AND last like '%${this.formatStrForSQL(last)}%'`
                     }
                 }
                 if (street !== undefined) {
                     if (conditions === '') {
-                        conditions = ` WHERE street like '%${street}%'`
+                        conditions = ` WHERE street like '%${this.formatStrForSQL(street)}%'`
                     }
                     else {
-                        conditions += ` AND street like '%${street}%'`
+                        conditions += ` AND street like '%${this.formatStrForSQL(street)}%'`
                     }
                 }
                 if (city !== undefined) {
                     if (conditions === '') {
-                        conditions = ` WHERE city like '%${city}%'`
+                        conditions = ` WHERE city like '%${this.formatStrForSQL(city)}%'`
                     }
                     else {
-                        conditions += ` AND city like '%${city}%'`
+                        conditions += ` AND city like '%${this.formatStrForSQL(city)}%'`
                     }
                 }
                 if (zip !== undefined) {
@@ -187,18 +193,11 @@ export class RootService {
 
                 request += conditions + ";"
 
-                // console.log('request: ', request)
+                this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Executing request : ${request}` + ` - (${performance.now() - perfStart}ms)`)
 
                 let res: IClient[] = db.prepare(request).all()
 
                 const perfEnd = performance.now() - perfStart
-
-                // return {
-                //     'status': 'OK',
-                //     'performanceMs': perfEnd,
-                //     'responseSize': res.length,
-                //     'response': res
-                // }
 
 
                 this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
@@ -213,15 +212,15 @@ export class RootService {
             catch (error) {
                 // throw error
                 const perfEnd = performance.now() - perfStart
-                this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${perfEnd}ms)`)
-                // reject(error)
+                this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + error.name + ' ' + error.message + ` - (${perfEnd}ms)`)
+                console.log(error)
                 reject({
                     'status': 'KO',
                     'performanceMs': perfEnd,
                     'responseSize': 0,
                     'errors': [{
                         code: 20,
-                        message: error.toString()
+                        message: error.name + ' ' + error.message
                     }]
                 })
             }
@@ -358,6 +357,11 @@ export class RootService {
             // this.logger.warn(`It would be time to purge the base, this warning appears only if the id value is higher than a number with ${extraZero} numerals`)
             return valueStr
         }
+    }
+
+    // To prevent some SQL Injections
+    private formatStrForSQL(input: string): string {
+        return input.replace(/'/g, "''")
     }
 
 
