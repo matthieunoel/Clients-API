@@ -169,7 +169,7 @@ export class RootService {
                 let errors: IError[] = []
 
                 if (Config.authentification) {
-                    if (!(await this.testToken(token, 1))) {
+                    if (!(await this.testToken(token, 10))) {
                         const perfEnd = performance.now() - perfStart
                         let errMsg = `The token is invalid or don't have the right permissions.`
                         if (token === undefined) {
