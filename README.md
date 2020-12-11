@@ -1,6 +1,6 @@
 # Installation
 
-```
+```sh
 npm i -g yarn
 npm i -g nodemon
 sudo yarn install
@@ -10,7 +10,7 @@ Then, edit "./src/app.ts", put you're ip address and set the config you want.
 
 Finally, in function of the plateform you're using,
 
-```
+```sh
 yarn start-wnd
 yarn start-linux
 ```
@@ -51,6 +51,19 @@ yarn start-linux
 ```
 
 - GET: "/getLogs" (Params(not required): all(boolean), guestId(number), uuid(string), dateStart(string), dateEnd(string)) : Permit to check logs, these parameters are options. "all" permit to see all logs, not only this month. guestId, uuid, dateStart, dateEnd are filters. dateStart and dateEnd have to be this way : "YYYY-MM-DDThh:mm:ss", for example, "2020-03-24T11:15:00".
+  The response looks like :
+
+```
+1 - Req  [2020-12-11 13:57:24] Request at "/getClients". Parameters are : {id: undefined, guid: undefined, first: Eugene, last: undefined, street: undefined, city: undefined, zip: undefined}
+2 - Log  [2020-12-11 13:57:24] getClients[6a0fdf.] - Process completed successfully. - (141.21329998970032ms)
+3 - Req  [2020-12-11 13:57:28] Request at "/getLogs". Parameters are : {uuid: undefined, dateStart: undefined, dateEnd: undefined, all: true}
+4 - Log  [2020-12-11 13:57:28] getLogs[6c65b5.] - Parameter "all" used succesfully - (3.136598974466324ms)
+5 - Log  [2020-12-11 13:57:28] getLogs[6c65b5.] - Process completed successfully. - (17.92179998755455ms)
+6 - Req  [2020-12-11 13:57:45] Request at "/getLogs". Parameters are : {uuid: undefined, dateStart: undefined, dateEnd: undefined, all: true}
+7 - Log  [2020-12-11 13:57:45] getLogs[76711f.] - Parameter "all" used succesfully - (1.9009000062942505ms)
+8 - Log  [2020-12-11 13:57:45] getLogs[76711f.] - Process completed successfully. - (18.925298988819122ms)
+9 - Req  [2020-12-11 14:04:36] Request at "/".
+```
 
 # Troubleshooting :
 
