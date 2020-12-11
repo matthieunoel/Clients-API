@@ -4,7 +4,7 @@ const fsPromise = require('fs').promises
 const Database = require('better-sqlite3')
 
 import { performance } from 'perf_hooks'
-import { IClient, IClientResult } from './root.interfaces'
+import { IClient, IClientResult, IError } from './root.interfaces'
 import { Logger } from './root.logSystem'
 
 export class RootService {
@@ -84,87 +84,123 @@ export class RootService {
         const perfStart = performance.now()
         const uuid: string = uuidv1()
 
-        try {
+        return new Promise<IClientResult>((resolve, reject) => {
 
-            const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
-            let request: string = ''
-            let conditions: string = ''
+            try {
 
-            request = 'SELECT * FROM client'
+                const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+                let request: string = ''
+                let conditions: string = ''
+                let errors: IError[] = []
 
-            if (id !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE id=${id}`
+                if (isNaN(id) && id !== undefined) {
+                    errors.push({
+                        code: 21,
+                        message: `La valeur passée via id n'est pas un nombre.`
+                    })
                 }
-                else {
-                    conditions += ` AND id=${id}`
+                if (isNaN(zip) && zip !== undefined) {
+                    errors.push({
+                        code: 22,
+                        message: `La valeur passée via zip n'est pas un nombre.`
+                    })
                 }
-            }
-            if (guid !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE guid=${guid}`
-                }
-                else {
-                    conditions += ` AND guid=${guid}`
-                }
-            }
-            if (first !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE first like '%${first}%'`
-                }
-                else {
-                    conditions += ` AND first like '%${first}%'`
-                }
-            }
-            if (last !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE last like '%${last}%'`
-                }
-                else {
-                    conditions += ` AND last like '%${last}%'`
-                }
-            }
-            if (street !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE street like '%${street}%'`
-                }
-                else {
-                    conditions += ` AND street like '%${street}%'`
-                }
-            }
-            if (city !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE city like '%${city}%'`
-                }
-                else {
-                    conditions += ` AND city like '%${city}%'`
-                }
-            }
-            if (zip !== undefined) {
-                if (conditions === '') {
-                    conditions = ` WHERE zip = ${zip}`
-                }
-                else {
-                    conditions += ` AND zip = ${zip}`
-                }
-            }
 
-            request += conditions + ";"
+                if (errors.length > 0) {
+                    const perfEnd = performance.now() - perfStart
+                    let errorMsg = ''
+                    errors.forEach((item, index) => {
+                        if (errorMsg === '') {
+                            errorMsg = errors[index].message
+                        }
+                        else {
+                            errorMsg += ', ' + errors[index].message
+                        }
+                    })
+                    this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + errorMsg + ` - (${performance.now() - perfStart}ms)`)
+                    reject({
+                        'status': 'KO',
+                        'performanceMs': perfEnd,
+                        'responseSize': 0,
+                        errors
+                    })
+                }
 
-            // console.log('request: ', request)
+                request = 'SELECT * FROM client'
 
-            let res: IClient[] = db.prepare(request).all()
+                if (id !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE id=${id}`
+                    }
+                    else {
+                        conditions += ` AND id=${id}`
+                    }
+                }
+                if (guid !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE guid='${guid}'`
+                    }
+                    else {
+                        conditions += ` AND guid='${guid}'`
+                    }
+                }
+                if (first !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE first like '%${first}%'`
+                    }
+                    else {
+                        conditions += ` AND first like '%${first}%'`
+                    }
+                }
+                if (last !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE last like '%${last}%'`
+                    }
+                    else {
+                        conditions += ` AND last like '%${last}%'`
+                    }
+                }
+                if (street !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE street like '%${street}%'`
+                    }
+                    else {
+                        conditions += ` AND street like '%${street}%'`
+                    }
+                }
+                if (city !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE city like '%${city}%'`
+                    }
+                    else {
+                        conditions += ` AND city like '%${city}%'`
+                    }
+                }
+                if (zip !== undefined) {
+                    if (conditions === '') {
+                        conditions = ` WHERE zip = ${zip}`
+                    }
+                    else {
+                        conditions += ` AND zip = ${zip}`
+                    }
+                }
 
-            const perfEnd = performance.now() - perfStart
+                request += conditions + ";"
 
-            // return {
-            //     'status': 'OK',
-            //     'performanceMs': perfEnd,
-            //     'responseSize': res.length,
-            //     'response': res
-            // }
+                // console.log('request: ', request)
 
-            return new Promise<IClientResult>((resolve, reject) => {
+                let res: IClient[] = db.prepare(request).all()
+
+                const perfEnd = performance.now() - perfStart
+
+                // return {
+                //     'status': 'OK',
+                //     'performanceMs': perfEnd,
+                //     'responseSize': res.length,
+                //     'response': res
+                // }
+
+
                 this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
                 resolve({
                     'status': 'OK',
@@ -172,17 +208,26 @@ export class RootService {
                     'responseSize': res.length,
                     'response': res
                 })
-            })
 
-        }
-        catch (error) {
+            }
+            catch (error) {
+                // throw error
+                const perfEnd = performance.now() - perfStart
+                this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${perfEnd}ms)`)
+                // reject(error)
+                reject({
+                    'status': 'KO',
+                    'performanceMs': perfEnd,
+                    'responseSize': 0,
+                    'errors': [{
+                        code: 20,
+                        message: error.toString()
+                    }]
+                })
+            }
 
-            // throw error
-            return new Promise<IClientResult>((resolve, reject) => {
-                this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
-                reject(error)
-            })
-        }
+
+        })
 
 
     }

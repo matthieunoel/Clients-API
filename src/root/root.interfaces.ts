@@ -17,5 +17,11 @@ export interface IClientResult {
     status: string,
     performanceMs: number,
     responseSize: number,
-    response: IClient[]
+    response?: IClient[]
+    errors?: IError[]
+}
+
+export interface IError {
+    code: number,
+    message: string
 }
