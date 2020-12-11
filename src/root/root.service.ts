@@ -140,6 +140,128 @@ export class RootService {
 
     }
 
+    public async getEveryOne() {
+
+        const perfStart = performance.now()
+        const uuid: string = uuidv1()
+
+        try {
+
+            const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+            let request: string = ''
+
+            request = 'SELECT * FROM client'
+            let res = db.prepare(request).all()
+
+            const perf = (performance.now() - perfStart) + 'ms'
+            return {
+                'status': 'OK',
+                'performance': perf,
+                'response': res
+            }
+
+        }
+        catch (error) {
+            this.logger.error(`getLogs[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+            throw error
+        }
+
+
+    }
+
+    public async getClients(id: number, guid: string, first: string, last: string, street: string, city: string, zip: number) {
+
+        const perfStart = performance.now()
+        const uuid: string = uuidv1()
+
+        try {
+
+            const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+            let request: string = ''
+            let conditions: string = ''
+
+            request = 'SELECT * FROM client'
+
+            if (id !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE id=${id}`
+                }
+                else {
+                    conditions += ` AND id=${id}`
+                }
+            }
+            if (guid !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE guid=${guid}`
+                }
+                else {
+                    conditions += ` AND guid=${guid}`
+                }
+            }
+            if (first !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE first like '%${first}%'`
+                }
+                else {
+                    conditions += ` AND first like '%${first}%'`
+                }
+            }
+            if (last !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE last like '%${last}%'`
+                }
+                else {
+                    conditions += ` AND last like '%${last}%'`
+                }
+            }
+            if (street !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE street like '%${street}%'`
+                }
+                else {
+                    conditions += ` AND street like '%${street}%'`
+                }
+            }
+            if (city !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE city like '%${city}%'`
+                }
+                else {
+                    conditions += ` AND city like '%${city}%'`
+                }
+            }
+            if (zip !== undefined) {
+                if (conditions === '') {
+                    conditions = ` WHERE zip = ${zip}`
+                }
+                else {
+                    conditions += ` AND zip = ${zip}`
+                }
+            }
+
+            request += conditions + ";"
+
+            console.log('request: ', request)
+
+            let res: Object[] = db.prepare(request).all()
+
+            const perf = performance.now() - perfStart
+            return {
+                'status': 'OK',
+                'performanceMs': perf,
+                'responseSize': res.length,
+                'response': res
+            }
+
+        }
+        catch (error) {
+            this.logger.error(`getLogs[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+            throw error
+        }
+
+
+    }
+
     public async checkFolders() {
 
         try {
@@ -183,13 +305,6 @@ export class RootService {
             return valueStr
         }
     }
-
-    // public async createDBIfNotExist() {
-    //         const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
-
-            
-    //         db.close()
-    // }
 
     public async InitDB() {
 

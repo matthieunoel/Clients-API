@@ -60,6 +60,26 @@ export class RootController {
         }
     }
 
+    // @Get('/getEveryOne')
+    // async getEveryOne(@Res() response: Response) {
+    //     this.logger.reqLog('Request at "/getEveryOne"')
+    //     return await this.rootService.getEveryOne()
+    // }
+
+    @Get('/getClients')
+    async getClients(
+        @QueryParam('id', { required: false }) id: number,
+        @QueryParam('guid', { required: false }) guid: string,
+        @QueryParam('first', { required: false }) first: string,
+        @QueryParam('last', { required: false }) last: string,
+        @QueryParam('street', { required: false }) street: string,
+        @QueryParam('city', { required: false }) city: string,
+        @QueryParam('zip', { required: false }) zip: number
+    ) {
+        this.logger.reqLog('Request at "/getEveryOne"')
+        return await this.rootService.getClients(id, guid, first, last, street, city, zip)
+    }
+
     // @Post('/print')
     // async print(
     //     @UploadedFile('file', { options: { limits: { fieldSize: 1024 * 1024 * 1024 }, required: true } }) file: any,
