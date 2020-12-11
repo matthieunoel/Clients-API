@@ -15,28 +15,52 @@ yarn start-wnd
 yarn start-linux
 ```
 
-# Auhtentification
+# Auhtentication
 
-The auhtentification configuration is stored in ./authentification.json
+You can configure the anthentication in "./authentication.json". The file should looks like this :
 
-Notes : plus la permission est petite, plus l'utilisateur a des droits
+```json
+{
+  "authentication": true,
+  "tokenDuration": 60,
+  "loginList": [
+    {
+      "login": "mnoel",
+      "password": "mdp",
+      "authLevel": 0
+    }
+  ]
+}
+```
 
-- 0 = admin
-- 10 = utilisateur lambda
+- "authentication" indicates if the API needs and anthentication system or not.
+- "tokenDuration" indicates the time of validity of a token (in minutes)
+- "loginList" is the list of every logins of the API. In this object you can find the login, the password and the authentication level ("authLevel"). The lower the number is, the higher its permissions are. 0 are for admins and 10 for basic users.
 
 # Request list :
 
 - GET : "/" : Give you info about the server.
   The response looks like :
 
-```json
-{
-  "name": "APINAME",
-  "version": "1.0.0"
-}
-```
+  ```json
+  {
+    "name": "APINAME",
+    "version": "1.0.0"
+  }
+  ```
 
-- GET: "/getClients" (Params(not required): id(number), guid(string), first(string), last(string), street(string), city(string), zip(number)): Permit to get a list of the clients in functions of the parameters.
+- GET: "/getToken" (Params: login(string), password(string)): Give you a 60 minutes token.
+  The response looks like :
+
+  ```json
+  {
+    "status": "OK",
+    "performanceMs": 15.70270100235939,
+    "token": "5a3e9a10-3bdf-11eb-aef5-0b1bf8ec358c"
+  }
+  ```
+
+- GET: "/getClients" (Params: token(string), id(?number), guid(?string), first(?string), last(?string), street(?string), city(?string), zip(?number)): Permit to get a list of the clients in functions of the parameters.
   The response looks like :
 
 ```json
@@ -59,7 +83,7 @@ Notes : plus la permission est petite, plus l'utilisateur a des droits
 }
 ```
 
-- GET: "/getLogs" (Params(not required): all(boolean), guestId(number), uuid(string), dateStart(string), dateEnd(string)) : Permit to check logs, these parameters are options. "all" permit to see all logs, not only this month. guestId, uuid, dateStart, dateEnd are filters. dateStart and dateEnd have to be this way : "YYYY-MM-DDThh:mm:ss", for example, "2020-03-24T11:15:00".
+- GET: "/getLogs" (Params: token(string), all(?boolean), guestId(?number), uuid(?string), dateStart(?string), dateEnd(?string)) : Permit to check logs, these parameters are options. "all" permit to see all logs, not only this month. guestId, uuid, dateStart, dateEnd are filters. dateStart and dateEnd have to be this way : "YYYY-MM-DDThh:mm:ss", for example, "2020-03-24T11:15:00".
   The response looks like :
 
 ```
