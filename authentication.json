@@ -1,5 +1,5 @@
 {
-    "authentification": true,
+    "authentication": true,
     "tokenDuration": 60,
     "loginList": [{
         "login": "mnoel",

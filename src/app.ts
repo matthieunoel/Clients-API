@@ -15,9 +15,9 @@ export class Config {
   public static OnLinux: boolean = false
   public static devToolsActivated: boolean = false
   // tslint:disable-next-line: ban-types
-  public static authentification: boolean = require('../authentification.json').authentification
-  public static tokenDuration: number = require('../authentification.json').tokenDuration
-  public static loginList: ILogin[] = require('../authentification.json').loginList
+  public static authentication: boolean = require('../authentication.json').authentication
+  public static tokenDuration: number = require('../authentication.json').tokenDuration
+  public static loginList: ILogin[] = require('../authentication.json').loginList
 
 }
 

@@ -168,7 +168,7 @@ export class RootService {
                 let conditions: string = ''
                 let errors: IError[] = []
 
-                if (Config.authentification) {
+                if (Config.authentication) {
                     if (!(await this.testToken(token, 10))) {
                         const perfEnd = performance.now() - perfStart
                         let errMsg = `The token is invalid or don't have the right permissions.`
@@ -325,7 +325,7 @@ export class RootService {
         return new Promise<string>(async (resolve, reject) => {
             try {
 
-                if (Config.authentification) {
+                if (Config.authentication) {
                     if (!(await this.testToken(token, 0))) {
                         const perfEnd = performance.now() - perfStart
                         let errMsg = `The token is invalid or don't have the right permissions.`
