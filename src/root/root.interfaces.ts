@@ -3,6 +3,29 @@ export interface IRootResult {
     version: any
 }
 
+export interface IError {
+    code: number,
+    message: string
+}
+
+export interface ILogin {
+    login: string,
+    password: string,
+    authLevel: number
+}
+
+export interface ITokenResult {
+    status: string,
+    performanceMs: number,
+    token?: string,
+    errors?: IError[]
+}
+
+export interface ITokenTestResponse {
+    permissions: number,
+    expiration: string | Date
+}
+
 export interface IClient {
     id?: number,
     guid: string,
@@ -19,9 +42,4 @@ export interface IClientResult {
     responseSize: number,
     response?: IClient[]
     errors?: IError[]
-}
-
-export interface IError {
-    code: number,
-    message: string
 }

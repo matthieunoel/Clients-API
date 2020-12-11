@@ -1,10 +1,11 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
+    "defaultSeverity": "warning",
+    "extends": "tslint:recommended",
     "jsRules": {},
     "rules": {
+        "deprecation": {
+            "severity": "warning"
+        },
         "quotemark": [
             true,
             "single"

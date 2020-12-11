@@ -3,7 +3,7 @@ import { Response } from 'express'
 import { RootService } from './root.service'
 import bodyParser = require('body-parser')
 import { Logger } from './root.logSystem'
-import { IRootResult, IClient, IClientResult } from './root.interfaces'
+import { IRootResult, IClient, IClientResult, ITokenResult } from './root.interfaces'
 
 const fs = require('fs')
 
@@ -31,8 +31,18 @@ export class RootController {
         }
     }
 
+    @Get('/getToken')
+    async getToken(
+        @QueryParam('login', { required: false }) login: string,
+        @QueryParam('password', { required: false }) password: string
+    ): Promise<ITokenResult> {
+        this.logger.reqLog(`Request at "/getToken". Parameters are : {login: ${login}, password: }`)
+        return await this.rootService.getToken(login, password)
+    }
+
     @Get('/getClients')
     async getClients(
+        @QueryParam('token', { required: false }) token: string,
         @QueryParam('id', { required: false }) id: number,
         @QueryParam('guid', { required: false }) guid: string,
         @QueryParam('first', { required: false }) first: string,
@@ -42,19 +52,20 @@ export class RootController {
         @QueryParam('zip', { required: false }) zip: number
     ): Promise<IClientResult> {
         this.logger.reqLog(`Request at "/getClients". Parameters are : {id: ${id}, guid: ${guid}, first: ${first}, last: ${last}, street: ${street}, city: ${city}, zip: ${zip}}`)
-        return await this.rootService.getClients(id, guid, first, last, street, city, zip)
+        return await this.rootService.getClients(token, id, guid, first, last, street, city, zip)
     }
 
     @ContentType('text/plain')
     @Get('/getLogs')
     async seeLogs(
+        @QueryParam('token', { required: false }) token: string,
         @QueryParam('uuid') uuid: string,
         @QueryParam('dateStart') dateStart: string,
         @QueryParam('dateEnd') dateEnd: string,
         @QueryParam('all') all: boolean
     ): Promise<string> {
         this.logger.reqLog(`Request at "/getLogs". Parameters are : {uuid: ${uuid}, dateStart: ${dateStart}, dateEnd: ${dateEnd}, all: ${all}}`)
-        return await this.rootService.getLogs(uuid, all, dateStart, dateEnd)
+        return await this.rootService.getLogs(token, uuid, all, dateStart, dateEnd)
     }
 
 }

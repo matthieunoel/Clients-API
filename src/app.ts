@@ -3,6 +3,7 @@ import { createExpressServer, useContainer } from 'routing-controllers'
 import { RootController } from './root/root.controller'
 const express = require('express')
 import Container from 'typedi'
+import { ILogin } from './root/root.interfaces'
 
 useContainer(Container)
 
@@ -13,6 +14,10 @@ export class Config {
   public static Ip: string = '127.0.0.1'
   public static OnLinux: boolean = false
   public static devToolsActivated: boolean = false
+  // tslint:disable-next-line: ban-types
+  public static authentification: boolean = require('../authentification.json').authentification
+  public static tokenDuration: number = require('../authentification.json').tokenDuration
+  public static loginList: ILogin[] = require('../authentification.json').loginList
 
 }
 

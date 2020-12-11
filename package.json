@@ -7,8 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "release": "standard-version -a && git push --follow-tags origin master",
         "build": "tsc -p ./",
-        "start-linux": "sudo npm run build ; nodemon",
-        "start-wnd": "npm run build && nodemon"
+        "start-linux": "sudo npm run build ; nodemon --watch src src/**.ts",
+        "start-wnd": "npm run build && nodemon --watch src src/**.ts"
     },
     "repository": {
         "type": "git",
@@ -37,7 +37,9 @@
         "@types/express": "^4.17.2",
         "@types/node": "^13.7.1",
         "node-gyp": "^6.1.0",
+        "nodemon": "^2.0.6",
         "standard-version": "^7.1.0",
+        "ts-node": "^9.1.1",
         "tslint": "^6.0.0"
     }
 }

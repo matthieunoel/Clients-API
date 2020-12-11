@@ -15,6 +15,15 @@ yarn start-wnd
 yarn start-linux
 ```
 
+# Auhtentification
+
+The auhtentification configuration is stored in ./authentification.json
+
+Notes : plus la permission est petite, plus l'utilisateur a des droits
+
+- 0 = admin
+- 10 = utilisateur lambda
+
 # Request list :
 
 - GET : "/" : Give you info about the server.
@@ -64,6 +73,14 @@ yarn start-linux
 8 - Log  [2020-12-11 13:57:45] getLogs[76711f.] - Process completed successfully. - (18.925298988819122ms)
 9 - Req  [2020-12-11 14:04:36] Request at "/".
 ```
+
+# Liste des codes d'erreurs :
+
+- 10: Miscancellous authentification error.
+- 11: Authentification error, The login or password is incorrect.
+- 12: Authentification error, The token is invalid or don't have the right permissions or the token is missing.
+- 20: Miscancellous get error.
+- 21-2N: Get error, The N parameters (token excluded) is invalid.
 
 # Troubleshooting :
 

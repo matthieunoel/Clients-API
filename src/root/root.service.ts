@@ -4,7 +4,9 @@ const fsPromise = require('fs').promises
 const Database = require('better-sqlite3')
 
 import { performance } from 'perf_hooks'
-import { IClient, IClientResult, IError } from './root.interfaces'
+import { couldStartTrivia } from 'typescript'
+import { Config } from '../app'
+import { IClient, IClientResult, IError, ILogin, ITokenResult, ITokenTestResponse } from './root.interfaces'
 import { Logger } from './root.logSystem'
 
 export class RootService {
@@ -47,6 +49,12 @@ export class RootService {
         try {
             const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
             let request: string = ''
+
+            // Setting Token table
+            request = 'CREATE TABLE IF NOT EXISTS token(id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT, permissions NUMERIC, expiration TEXT);'
+            db.prepare(request).run()
+
+            // Setting Client table and data
             request = 'CREATE TABLE IF NOT EXISTS client(id INTEGER PRIMARY KEY AUTOINCREMENT, guid TEXT, first TEXT, last TEXT, street TEXT, city TEXT, zip NUMERIC);'
             db.prepare(request).run()
 
@@ -79,12 +87,79 @@ export class RootService {
         }
     }
 
-    public async getClients(id: number, guid: string, first: string, last: string, street: string, city: string, zip: number): Promise<IClientResult> {
+    public async getToken(login: string, password: string): Promise<ITokenResult> {
 
         const perfStart = performance.now()
         const uuid: string = uuidv1()
 
-        return new Promise<IClientResult>((resolve, reject) => {
+        return new Promise<ITokenResult>((resolve, reject) => {
+
+            try {
+
+                let loggedIn = false
+                let authLevel = -1
+
+                Config.loginList.forEach((item: ILogin, index) => {
+                    if (item.login === login && item.password === password) {
+                        loggedIn = true
+                        authLevel = item.authLevel
+                    }
+                })
+
+                if (loggedIn) {
+
+                    const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+                    const token = uuidv1()
+                    let request: string = `INSERT INTO token (token, permissions, expiration) VALUES ('${token}', ${authLevel}, datetime('now', 'localtime', '+${Config.tokenDuration} minutes'))`
+                    db.prepare(request).run()
+
+                    const perfEnd = performance.now() - perfStart
+                    this.logger.log(`getToken[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
+                    return resolve({
+                        status: 'OK',
+                        performanceMs: perfEnd,
+                        token
+                    })
+                }
+                else {
+                    const perfEnd = performance.now() - perfStart
+                    let errMsg = `The login or password is incorrect`
+                    this.logger.error(`getToken[${uuid.slice(0, 6)}.] - ` + errMsg + ` - (${performance.now() - perfStart}ms)`)
+                    return reject({
+                        'status': 'KO',
+                        'performanceMs': perfEnd,
+                        'responseSize': 0,
+                        'errors': [{
+                            code: 11,
+                            message: errMsg
+                        }]
+                    })
+                }
+
+            } catch (error) {
+                const perfEnd = performance.now() - perfStart
+                this.logger.error(`getToken[${uuid.slice(0, 6)}.] - ` + error.name + ' ' + error.message + ` - (${perfEnd}ms)`)
+                return reject({
+                    'status': 'KO',
+                    'performanceMs': perfEnd,
+                    'responseSize': 0,
+                    'errors': [{
+                        code: 10,
+                        message: error.name + ' ' + error.message
+                    }]
+                })
+            }
+
+
+        })
+    }
+
+    public async getClients(token: string, id: number, guid: string, first: string, last: string, street: string, city: string, zip: number): Promise<IClientResult> {
+
+        const perfStart = performance.now()
+        const uuid: string = uuidv1()
+
+        return new Promise<IClientResult>(async (resolve, reject) => {
 
             try {
 
@@ -93,11 +168,25 @@ export class RootService {
                 let conditions: string = ''
                 let errors: IError[] = []
 
-                guid = decodeURIComponent(guid)
-                first = decodeURIComponent(first)
-                last = decodeURIComponent(last)
-                street = decodeURIComponent(street)
-                city = decodeURIComponent(city)
+                if (Config.authentification) {
+                    if (!(await this.testToken(token, 1))) {
+                        const perfEnd = performance.now() - perfStart
+                        let errMsg = `The token is invalid or don't have the right permissions.`
+                        if (token === undefined) {
+                            errMsg = `The token is missing.`
+                        }
+                        this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + errMsg + ` - (${performance.now() - perfStart}ms)`)
+                        return reject({
+                            'status': 'KO',
+                            'performanceMs': perfEnd,
+                            'responseSize': 0,
+                            'errors': [{
+                                code: 12,
+                                message: errMsg
+                            }]
+                        })
+                    }
+                }
 
                 if (isNaN(id) && id !== undefined) {
                     errors.push({
@@ -107,7 +196,7 @@ export class RootService {
                 }
                 if (isNaN(zip) && zip !== undefined) {
                     errors.push({
-                        code: 22,
+                        code: 27,
                         message: `La valeur passée via zip n'est pas un nombre.`
                     })
                 }
@@ -124,7 +213,7 @@ export class RootService {
                         }
                     })
                     this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + errorMsg + ` - (${performance.now() - perfStart}ms)`)
-                    reject({
+                    return reject({
                         'status': 'KO',
                         'performanceMs': perfEnd,
                         'responseSize': 0,
@@ -191,17 +280,15 @@ export class RootService {
                     }
                 }
 
-                request += conditions + ";"
+                request += conditions + ';'
 
                 this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Executing request : ${request}` + ` - (${performance.now() - perfStart}ms)`)
 
                 let res: IClient[] = db.prepare(request).all()
 
                 const perfEnd = performance.now() - perfStart
-
-
                 this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
-                resolve({
+                return resolve({
                     'status': 'OK',
                     'performanceMs': perfEnd,
                     'responseSize': res.length,
@@ -213,8 +300,7 @@ export class RootService {
                 // throw error
                 const perfEnd = performance.now() - perfStart
                 this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + error.name + ' ' + error.message + ` - (${perfEnd}ms)`)
-                console.log(error)
-                reject({
+                return reject({
                     'status': 'KO',
                     'performanceMs': perfEnd,
                     'responseSize': 0,
@@ -231,116 +317,138 @@ export class RootService {
 
     }
 
-    async getLogs(paramUuid: string, all: boolean, dateStart: string, dateEnd: string) {
+    async getLogs(token: string, paramUuid: string, all: boolean, dateStart: string, dateEnd: string) {
 
         const perfStart = performance.now()
         const uuid: string = uuidv1()
 
-        try {
+        return new Promise<string>(async (resolve, reject) => {
+            try {
 
-            let res: string = ''
-            const month = await this.extendNumber(parseInt(('0' + (new Date(Date.now()).getMonth() + 1)).slice(-2), 10), 2)
-            const year = await this.extendNumber(new Date(Date.now()).getFullYear(), 4)
-            const actualLogPath: string = `./log/${year}-${month}.log`
-
-            let logsList: string[] = []
-
-            if (all) {
-
-                const files = await fsPromise.readdir('./log/')
-
-                for (let index = 0; index < files.length; index++) {
-                    const file = files[index]
-                    logsList.push(...(await fsPromise.readFile(`./log/${file}`)).toString().split('\r\n'))
-                }
-
-                this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameter "all" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
-
-            }
-            else {
-
-                logsList.push(...(await fsPromise.readFile(actualLogPath)).toString().split('\r\n'))
-
-            }
-
-            if (paramUuid != undefined) {
-
-                const tmpList: string[] = logsList
-                logsList = []
-
-                for (let index = 0; index < tmpList.length; index++) {
-                    const log = tmpList[index]
-                    if (log.toString().includes(`[${paramUuid.slice(0, 6)}.]`)) {
-                        logsList.push(log)
+                if (Config.authentification) {
+                    if (!(await this.testToken(token, 0))) {
+                        const perfEnd = performance.now() - perfStart
+                        let errMsg = `The token is invalid or don't have the right permissions.`
+                        if (token === undefined) {
+                            errMsg = `The token is missing.`
+                        }
+                        this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + errMsg + ` - (${performance.now() - perfStart}ms)`)
+                        return reject({
+                            'status': 'KO',
+                            'performanceMs': perfEnd,
+                            'responseSize': 0,
+                            'errors': [{
+                                code: 12,
+                                message: errMsg
+                            }]
+                        })
                     }
                 }
 
-                this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameters "guestId" or "uuid" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+                let res: string = ''
+                const month = await this.extendNumber(parseInt(('0' + (new Date(Date.now()).getMonth() + 1)).slice(-2), 10), 2)
+                const year = await this.extendNumber(new Date(Date.now()).getFullYear(), 4)
+                const actualLogPath: string = `./log/${year}-${month}.log`
 
-            }
+                let logsList: string[] = []
 
-            if (dateStart != undefined) {
+                if (all) {
 
-                const dateReference: Date = new Date(dateStart)
+                    const files = await fsPromise.readdir('./log/')
 
-                const tmpList: string[] = logsList
-                logsList = []
-
-                for (let index = 0; index < tmpList.length; index++) {
-                    const log = tmpList[index]
-                    const comparedDate: Date = new Date(tmpList[index].slice(6, 25).replace(' ', 'T'))
-                    if (comparedDate >= dateReference) {
-                        logsList.push(log)
+                    for (let index = 0; index < files.length; index++) {
+                        const file = files[index]
+                        logsList.push(...(await fsPromise.readFile(`./log/${file}`)).toString().split('\r\n'))
                     }
+
+                    this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameter "all" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+
+                }
+                else {
+
+                    logsList.push(...(await fsPromise.readFile(actualLogPath)).toString().split('\r\n'))
+
                 }
 
-                this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameter "dateStart" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+                if (paramUuid != undefined) {
 
-            }
+                    const tmpList: string[] = logsList
+                    logsList = []
 
-            if (dateEnd != undefined) {
-
-                const dateReference: Date = new Date(dateEnd)
-
-                const tmpList: string[] = logsList
-                logsList = []
-
-                for (let index = 0; index < tmpList.length; index++) {
-                    const log = tmpList[index]
-                    const comparedDate: Date = new Date(tmpList[index].slice(6, 25).replace(' ', 'T'))
-                    if (comparedDate <= dateReference) {
-                        logsList.push(log)
+                    for (let index = 0; index < tmpList.length; index++) {
+                        const log = tmpList[index]
+                        if (log.toString().includes(`[${paramUuid.slice(0, 6)}.]`)) {
+                            logsList.push(log)
+                        }
                     }
+
+                    this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameters "guestId" or "uuid" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+
                 }
 
-                this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameter "dateEnd" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+                if (dateStart != undefined) {
 
-            }
+                    const dateReference: Date = new Date(dateStart)
 
-            if (logsList.length > 0) {
+                    const tmpList: string[] = logsList
+                    logsList = []
 
-                for (let index = 0; index < logsList.length; index++) {
-                    const log = logsList[index]
-                    if (log !== '') {
-                        res += `${await this.extendNumber(index + 1, (logsList.length + 1).toString().split('').length)} - ${log}\r\n`
+                    for (let index = 0; index < tmpList.length; index++) {
+                        const log = tmpList[index]
+                        const comparedDate: Date = new Date(tmpList[index].slice(6, 25).replace(' ', 'T'))
+                        if (comparedDate >= dateReference) {
+                            logsList.push(log)
+                        }
                     }
+
+                    this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameter "dateStart" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+
                 }
 
-            } else {
-                res = 'There are no logs'
+                if (dateEnd != undefined) {
+
+                    const dateReference: Date = new Date(dateEnd)
+
+                    const tmpList: string[] = logsList
+                    logsList = []
+
+                    for (let index = 0; index < tmpList.length; index++) {
+                        const log = tmpList[index]
+                        const comparedDate: Date = new Date(tmpList[index].slice(6, 25).replace(' ', 'T'))
+                        if (comparedDate <= dateReference) {
+                            logsList.push(log)
+                        }
+                    }
+
+                    this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Parameter "dateEnd" used succesfully` + ` - (${performance.now() - perfStart}ms)`)
+
+                }
+
+                if (logsList.length > 0) {
+
+                    for (let index = 0; index < logsList.length; index++) {
+                        const log = logsList[index]
+                        if (log !== '') {
+                            res += `${await this.extendNumber(index + 1, (logsList.length + 1).toString().split('').length)} - ${log}\r\n`
+                        }
+                    }
+
+                } else {
+                    res = 'There are no logs'
+                }
+
+                const perfEnd: number = performance.now() - perfStart
+                this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
+
+                return resolve(res)
+
+            } catch (error) {
+
+                this.logger.error(`getLogs[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+                return reject(`Erreur dans la lecture des logs : ${error.name} ${error.message}`)
+
             }
-
-            const perfEnd: number = performance.now() - perfStart
-            this.logger.log(`getLogs[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
-
-            return res
-
-        } catch (error) {
-
-            this.logger.error(`getLogs[${uuid.slice(0, 6)}.] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
-            throw error
-
-        }
+        })
 
     }
 
@@ -359,11 +467,34 @@ export class RootService {
         }
     }
 
-    // To prevent some SQL Injections
-    private formatStrForSQL(input: string): string {
-        return input.replace(/'/g, "''")
+    private async testToken(token: string, permissionAsked: number): Promise<boolean> {
+
+        return new Promise<boolean>((resolve, reject) => {
+
+            if (token === undefined) {
+                return resolve(false)
+            }
+
+            const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+            const request: string = `SELECT permissions, expiration FROM token WHERE token = '${token}'`
+            const res: ITokenTestResponse[] = db.prepare(request).all()
+
+            if (res.length === 0) {
+                return resolve(false)
+            }
+            if (permissionAsked < res[0].permissions || new Date(res[0].expiration) < new Date()) {
+                return resolve(false)
+            }
+
+            return resolve(true)
+
+        })
     }
 
+    // To prevent some SQL Injections
+    private formatStrForSQL(input: string): string {
+        return decodeURIComponent(input).replace(/'/g, "''")
+    }
 
 
 }
