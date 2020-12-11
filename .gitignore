@@ -4,3 +4,4 @@ src/**/*.map
 *.log
 tmp/**
 db/**/**.*
+.vscode/**.*
