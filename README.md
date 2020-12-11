@@ -98,7 +98,7 @@ You can configure the anthentication in "./authentication.json". The file should
   9 - Req  [2020-12-11 14:04:36] Request at "/".
   ```
 
-# Liste des codes d'erreurs :
+# Error code list :
 
 - 10: Miscancellous authentification error.
 - 11: Authentification error, The login or password is incorrect.
