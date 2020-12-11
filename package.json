@@ -1,6 +1,6 @@
 {
     "name": "Node_REST_API",
-    "version": "0.0.2",
+    "version": "1.0.0",
     "description": "Server for company access control a bit safe.",
     "main": "src/app.js",
     "scripts": {
