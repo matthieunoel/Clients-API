@@ -1,5 +1,5 @@
 {
-    "name": "Node_REST_API",
+    "name": "ClientsRestApi",
     "version": "1.0.0",
     "description": "Server for company access control a bit safe.",
     "main": "src/app.js",
@@ -12,7 +12,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@gitlab.everial.com:doclab/facial-server.git"
+        "url": "git@github.com:matthieunoel/Clients-API.git"
     },
     "author": "Matthieu NOEL",
     "license": "ISC",
