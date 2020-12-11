@@ -15,7 +15,7 @@ yarn start-wnd
 yarn start-linux
 ```
 
-# Auhtentication
+# Authentication
 
 You can configure the anthentication in "./authentication.json". The file should looks like this :
 
