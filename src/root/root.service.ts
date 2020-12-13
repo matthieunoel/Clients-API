@@ -49,9 +49,9 @@ export class RootService {
 
         try {
 
-            logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Database initialisation.` + ` - (${performance.now() - perfStart}ms)`)
+            logger.log(`initDB[${uuid.slice(0, 6)}] - ` + `Database initialisation.` + ` - (${performance.now() - perfStart}ms)`)
 
-            const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+            const db = new Database('./db/SQLite.db')
             let request: string = ''
 
             // Setting Token table
@@ -62,14 +62,14 @@ export class RootService {
             request = 'CREATE TABLE IF NOT EXISTS client(id INTEGER PRIMARY KEY AUTOINCREMENT, guid TEXT, first TEXT, last TEXT, street TEXT, city TEXT, zip NUMERIC);'
             db.prepare(request).run()
 
-            logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Table creation if don't exists executed successfully.` + ` - (${performance.now() - perfStart}ms)`)
+            logger.log(`initDB[${uuid.slice(0, 6)}] - ` + `Table creation if don't exists executed successfully.` + ` - (${performance.now() - perfStart}ms)`)
 
             request = 'SELECT COUNT(*) as "nbLignes" FROM client'
             let res = db.prepare(request).all()
 
             if (res[0].nbLignes === 0) {
 
-                logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Starting adding data from "./src/static/clients.csv"` + ` - (${performance.now() - perfStart}ms)`)
+                logger.log(`initDB[${uuid.slice(0, 6)}] - ` + `Starting adding data from "./src/static/clients.csv"` + ` - (${performance.now() - perfStart}ms)`)
 
                 const data: any = (await fsPromise.readFile('./src/static/clients.csv')).toString().replace('guid;first;last;street;city;zip\r\n', '').split('\r\n')
 
@@ -82,21 +82,39 @@ export class RootService {
                     }
                 }
 
-                logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Data insertion : ` + ` - (${performance.now() - perfStart}ms)`)
+                logger.log(`initDB[${uuid.slice(0, 6)}] - ` + `Data insertion : ` + ` - (${performance.now() - perfStart}ms)`)
             }
 
             db.close()
 
-            logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${performance.now() - perfStart}ms)`)
+            logger.log(`initDB[${uuid.slice(0, 6)}] - ` + `Process completed successfully.` + ` - (${performance.now() - perfStart}ms)`)
 
         } catch (error) {
-            logger.error(`InitDB[${uuid.slice(0, 6)}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+            logger.error(`initDB[${uuid.slice(0, 6)}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
             throw error
         }
     }
 
     public static cleanTokenTable() {
-        console.log('CLEAN')
+        const perfStart = performance.now()
+        const uuid: string = uuidv1()
+        const logger: Logger = new Logger()
+
+        try {
+
+            const db = new Database('./db/SQLite.db')
+            let request: string = `DELETE FROM token WHERE datetime(expiration) < datetime('now', 'localtime')`
+            // datetime('now', 'localtime', '+${Config.tokenDuration} minutes'))
+            db.prepare(request).run()
+
+            db.close()
+
+            logger.log(`cleanTokenTable[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${performance.now() - perfStart}ms)`)
+
+        } catch (error) {
+            logger.error(`cleanTokenTable[${uuid.slice(0, 6)}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+            throw error
+        }
     }
 
     public async getToken(login: string, password: string): Promise<ITokenResult> {
@@ -120,7 +138,7 @@ export class RootService {
 
                 if (loggedIn) {
 
-                    const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+                    const db = new Database('./db/SQLite.db')
                     const token = uuidv1()
                     let request: string = `INSERT INTO token (token, permissions, expiration) VALUES ('${token}', ${authLevel}, datetime('now', 'localtime', '+${Config.tokenDuration} minutes'))`
                     db.prepare(request).run()
@@ -175,7 +193,7 @@ export class RootService {
 
             try {
 
-                const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+                const db = new Database('./db/SQLite.db')
                 let request: string = ''
                 let conditions: string = ''
                 let errors: IError[] = []
@@ -576,7 +594,7 @@ export class RootService {
 
                 token = this.formatStrForSQL(token)
 
-                const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+                const db = new Database('./db/SQLite.db')
                 const request: string = `SELECT permissions, expiration FROM token WHERE token = '${token}';`
                 const res: ITokenTestResponse[] = db.prepare(request).all()
 

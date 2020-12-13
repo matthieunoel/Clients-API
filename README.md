@@ -130,5 +130,4 @@ https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/troubleshooting.md
 
 # ToDo List
 
-- SQL Procedure to remove expired tokens
 - Full configuration from JSON + dbname config

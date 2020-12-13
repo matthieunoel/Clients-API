@@ -32,6 +32,10 @@ app.use('/static', express.static('src/static'))
 
 RootService.checkFolders()
 RootService.initDB()
-RootService.cleanTokenTable()
+
+if (Config.tokenDuration > 0) {
+  RootService.cleanTokenTable()
+  setInterval(RootService.cleanTokenTable, Config.tokenDuration * 60000)
+}
 
 app.listen(Config.Port, Config.Ip)
