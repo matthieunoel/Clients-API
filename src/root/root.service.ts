@@ -13,7 +13,7 @@ export class RootService {
 
     private logger: Logger = new Logger()
 
-    public async checkFolders() {
+    public static async checkFolders() {
 
         try {
             fs.mkdirSync('./db/')
@@ -41,14 +41,15 @@ export class RootService {
 
     }
 
-    public async InitDB() {
+    public static async initDB() {
 
         const perfStart = performance.now()
         const uuid: string = uuidv1()
+        const logger: Logger = new Logger()
 
         try {
 
-            this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Database initialisation.` + ` - (${performance.now() - perfStart}ms)`)
+            logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Database initialisation.` + ` - (${performance.now() - perfStart}ms)`)
 
             const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
             let request: string = ''
@@ -61,14 +62,14 @@ export class RootService {
             request = 'CREATE TABLE IF NOT EXISTS client(id INTEGER PRIMARY KEY AUTOINCREMENT, guid TEXT, first TEXT, last TEXT, street TEXT, city TEXT, zip NUMERIC);'
             db.prepare(request).run()
 
-            this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Table creation if don't exists executed successfully.` + ` - (${performance.now() - perfStart}ms)`)
+            logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Table creation if don't exists executed successfully.` + ` - (${performance.now() - perfStart}ms)`)
 
             request = 'SELECT COUNT(*) as "nbLignes" FROM client'
             let res = db.prepare(request).all()
 
             if (res[0].nbLignes === 0) {
 
-                this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Starting adding data from "./src/static/clients.csv"` + ` - (${performance.now() - perfStart}ms)`)
+                logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Starting adding data from "./src/static/clients.csv"` + ` - (${performance.now() - perfStart}ms)`)
 
                 const data: any = (await fsPromise.readFile('./src/static/clients.csv')).toString().replace('guid;first;last;street;city;zip\r\n', '').split('\r\n')
 
@@ -81,17 +82,21 @@ export class RootService {
                     }
                 }
 
-                this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Data insertion : ` + ` - (${performance.now() - perfStart}ms)`)
+                logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Data insertion : ` + ` - (${performance.now() - perfStart}ms)`)
             }
 
             db.close()
 
-            this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${performance.now() - perfStart}ms)`)
+            logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${performance.now() - perfStart}ms)`)
 
         } catch (error) {
-            this.logger.error(`InitDB[${uuid.slice(0, 6)}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+            logger.error(`InitDB[${uuid.slice(0, 6)}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
             throw error
         }
+    }
+
+    public static cleanTokenTable() {
+        console.log('CLEAN')
     }
 
     public async getToken(login: string, password: string): Promise<ITokenResult> {

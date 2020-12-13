@@ -4,6 +4,7 @@ import { RootController } from './root/root.controller'
 const express = require('express')
 import Container from 'typedi'
 import { ILogin } from './root/root.interfaces'
+import { RootService } from './root/root.service'
 
 useContainer(Container)
 
@@ -28,5 +29,9 @@ const app = createExpressServer({
 
 // app.use('/spec', express.static('src/global/settings/ARM-settings'))
 app.use('/static', express.static('src/static'))
+
+RootService.checkFolders()
+RootService.initDB()
+RootService.cleanTokenTable()
 
 app.listen(Config.Port, Config.Ip)

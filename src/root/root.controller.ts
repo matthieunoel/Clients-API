@@ -18,8 +18,9 @@ export class RootController {
     constructor(
         private rootService: RootService
     ) {
-        this.rootService.checkFolders()
-        this.rootService.InitDB()
+        // RootService.checkFolders()
+        // RootService.initDB()
+        // RootService.cleanTokenTable()
     }
 
     @Get('/')
