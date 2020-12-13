@@ -47,6 +47,9 @@ export class RootService {
         const uuid: string = uuidv1()
 
         try {
+
+            this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Database initialisation.` + ` - (${performance.now() - perfStart}ms)`)
+
             const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
             let request: string = ''
 
@@ -57,6 +60,8 @@ export class RootService {
             // Setting Client table and data
             request = 'CREATE TABLE IF NOT EXISTS client(id INTEGER PRIMARY KEY AUTOINCREMENT, guid TEXT, first TEXT, last TEXT, street TEXT, city TEXT, zip NUMERIC);'
             db.prepare(request).run()
+
+            this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Table creation if don't exists executed successfully.` + ` - (${performance.now() - perfStart}ms)`)
 
             request = 'SELECT COUNT(*) as "nbLignes" FROM client'
             let res = db.prepare(request).all()
@@ -81,8 +86,10 @@ export class RootService {
 
             db.close()
 
+            this.logger.log(`InitDB[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${performance.now() - perfStart}ms)`)
+
         } catch (error) {
-            this.logger.error(`InitDB[${uuid}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
+            this.logger.error(`InitDB[${uuid.slice(0, 6)}] - ` + error.toString() + ` - (${performance.now() - perfStart}ms)`)
             throw error
         }
     }
@@ -332,7 +339,7 @@ export class RootService {
                         if (token === undefined) {
                             errMsg = `The token is missing.`
                         }
-                        this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + errMsg + ` - (${performance.now() - perfStart}ms)`)
+                        this.logger.error(`getLogs[${uuid.slice(0, 6)}.] - ` + errMsg + ` - (${performance.now() - perfStart}ms)`)
                         return reject({
                             'status': 'KO',
                             'performanceMs': perfEnd,

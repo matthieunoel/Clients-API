@@ -132,4 +132,3 @@ https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/troubleshooting.md
 
 - SQL Procedure to remove expired tokens
 - Token duration to 0 wich means no token duration.
-- Logs in InitDB
