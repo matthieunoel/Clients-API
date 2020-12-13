@@ -6,7 +6,7 @@ const Database = require('better-sqlite3')
 import { performance } from 'perf_hooks'
 import { couldStartTrivia } from 'typescript'
 import { Config } from '../app'
-import { IClient, IClientResult, IError, ILogin, ITokenResult, ITokenTestResponse } from './root.interfaces'
+import { IClient, IClientResult, IError, ILogin, ITokenResult, ITokenTestResponse, ITolenValidityResponse } from './root.interfaces'
 import { Logger } from './root.logSystem'
 
 export class RootService {
@@ -169,7 +169,7 @@ export class RootService {
                 let errors: IError[] = []
 
                 if (Config.authentication) {
-                    if (!(await this.testToken(token, 10))) {
+                    if (!(await this.testToken(token, 10, true))) {
                         const perfEnd = performance.now() - perfStart
                         let errMsg = `The token is invalid or don't have the right permissions.`
                         if (token === undefined) {
@@ -326,7 +326,7 @@ export class RootService {
             try {
 
                 if (Config.authentication) {
-                    if (!(await this.testToken(token, 0))) {
+                    if (!(await this.testToken(token, 0, true))) {
                         const perfEnd = performance.now() - perfStart
                         let errMsg = `The token is invalid or don't have the right permissions.`
                         if (token === undefined) {
@@ -452,6 +452,90 @@ export class RootService {
 
     }
 
+    public getTokenValidity(token: string) {
+        const perfStart = performance.now()
+        const uuid: string = uuidv1()
+
+        return new Promise<ITolenValidityResponse>(async (resolve, reject) => {
+
+            try {
+
+                if (Config.authentication) {
+                    const res: ITokenTestResponse = (await this.testToken(token, 10, false)) as ITokenTestResponse
+                    if (!res.validity) {
+                        const perfEnd = performance.now() - perfStart
+                        if (token === undefined) {
+                            let errMsg = `The token is missing.`
+                            this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + errMsg + ` - (${performance.now() - perfStart}ms)`)
+                            return reject({
+                                'status': 'KO',
+                                'performanceMs': perfEnd,
+                                'responseSize': 0,
+                                'errors': [{
+                                    code: 12,
+                                    message: errMsg
+                                }]
+                            })
+                        }
+                        else {
+                            return resolve({
+                                'status': 'OK',
+                                'performanceMs': perfEnd,
+                                'responseSize': 1,
+                                'response': [{
+                                    'validity': false,
+                                    'deathDate': new Date(res.expiration)
+                                }]
+                            })
+                        }
+                    }
+                    else {
+                        const perfEnd = performance.now() - perfStart
+                        this.logger.log(`getTokenValidity[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
+                        return resolve({
+                            'status': 'OK',
+                            'performanceMs': perfEnd,
+                            'responseSize': 1,
+                            'response': [{
+                                'validity': true,
+                                'deathDate': new Date(res.expiration)
+                            }]
+                        })
+                    }
+                }
+                else {
+                    const perfEnd = performance.now() - perfStart
+                    this.logger.log(`getTokenValidity[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
+                    return resolve({
+                        'status': 'OK',
+                        'performanceMs': perfEnd,
+                        'responseSize': 1,
+                        'response': [{
+                            'validity': true,
+                            'deathDate': '-'
+                        }]
+                    })
+                }
+            }
+            catch (error) {
+                // throw error
+                const perfEnd = performance.now() - perfStart
+                this.logger.error(`getClients[${uuid.slice(0, 6)}.] - ` + error.name + ' ' + error.message + ` - (${perfEnd}ms)`)
+                return reject({
+                    'status': 'KO',
+                    'performanceMs': perfEnd,
+                    'responseSize': 0,
+                    'errors': [{
+                        code: 20,
+                        message: error.name + ' ' + error.message
+                    }]
+                })
+            }
+
+
+        })
+    }
+
     private async extendNumber(value: number, extraZero: any) {
         const valueStr: string = value.toString()
         if (valueStr.length < extraZero) {
@@ -467,33 +551,60 @@ export class RootService {
         }
     }
 
-    private async testToken(token: string, permissionAsked: number): Promise<boolean> {
+    private async testToken(token: string, permissionAsked: number, onlyBooleanReturn: boolean): Promise<boolean | ITokenTestResponse> {
 
-        return new Promise<boolean>((resolve, reject) => {
+        return new Promise<boolean | ITokenTestResponse>((resolve, reject) => {
 
             if (token === undefined) {
                 return resolve(false)
             }
+            else {
 
-            const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
-            const request: string = `SELECT permissions, expiration FROM token WHERE token = '${token}'`
-            const res: ITokenTestResponse[] = db.prepare(request).all()
+                let validity: boolean
 
-            if (res.length === 0) {
-                return resolve(false)
+                token = this.formatStrForSQL(token)
+
+                const db = new Database('./db/SQLite.db'/*, { verbose: this.logger.log }*/)
+                const request: string = `SELECT permissions, expiration FROM token WHERE token = '${token}';`
+                const res: ITokenTestResponse[] = db.prepare(request).all()
+
+                if (res.length === 0) {
+                    validity = false
+                }
+                else if (permissionAsked < res[0].permissions || new Date(res[0].expiration) < new Date()) {
+                    validity = false
+                }
+                else {
+                    validity = true
+                }
+
+                if (onlyBooleanReturn) {
+                    return resolve(validity)
+                }
+                else {
+                    if (validity) {
+                        res[0].validity = validity
+                    }
+                    else {
+                        res.push({
+                            expiration: '-',
+                            permissions: -1
+                        })
+                        res[0].validity = validity
+                    }
+
+                    return resolve(res[0])
+                }
+
             }
-            if (permissionAsked < res[0].permissions || new Date(res[0].expiration) < new Date()) {
-                return resolve(false)
-            }
 
-            return resolve(true)
 
         })
     }
 
     // To prevent some SQL Injections
     private formatStrForSQL(input: string): string {
-        return decodeURIComponent(input).replace(/'/g, "''")
+        return decodeURIComponent(input).replace(/'/g, '\'\'')
     }
 
 

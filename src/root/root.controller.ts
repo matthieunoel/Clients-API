@@ -3,7 +3,7 @@ import { Response } from 'express'
 import { RootService } from './root.service'
 import bodyParser = require('body-parser')
 import { Logger } from './root.logSystem'
-import { IRootResult, IClient, IClientResult, ITokenResult } from './root.interfaces'
+import { IRootResult, IClient, IClientResult, ITokenResult, ITolenValidityResponse } from './root.interfaces'
 
 const fs = require('fs')
 
@@ -39,6 +39,16 @@ export class RootController {
         this.logger.reqLog(`Request at "/getToken". Parameters are : {login: ${login}, password: }`)
         return await this.rootService.getToken(login, password)
     }
+
+    @Get('/getTokenValidity')
+    async getTokenValidity(
+        @QueryParam('token', { required: false }) token: string
+    ): Promise<ITolenValidityResponse> {
+        this.logger.reqLog(`Request at "/getTokenValidity". Parameters are : {token: ${token}}`)
+        return await this.rootService.getTokenValidity(token)
+    }
+
+
 
     @Get('/getClients')
     async getClients(

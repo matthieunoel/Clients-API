@@ -23,7 +23,21 @@ export interface ITokenResult {
 
 export interface ITokenTestResponse {
     permissions: number,
-    expiration: string | Date
+    expiration: string | Date,
+    validity?: boolean
+}
+
+export interface ITolenValidityResponse {
+    status: string,
+    performanceMs: number,
+    responseSize: number,
+    response?: [
+        {
+            validity: boolean,
+            deathDate: string | Date
+        }
+    ]
+    errors?: IError[]
 }
 
 export interface IClient {

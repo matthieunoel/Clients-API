@@ -60,6 +60,23 @@ You can configure the anthentication in "./authentication.json". The file should
   }
   ```
 
+- GET "/getTokenValidity" (Params: token(string)): Give you the validity and the death date of a token.
+  The response should looks like :
+
+  ```json
+  {
+    "status": "OK",
+    "performanceMs": 0.9026990234851837,
+    "responseSize": 1,
+    "response": [
+      {
+        "validity": true,
+        "deathDate": "2020-12-13T19:02:33.000Z"
+      }
+    ]
+  }
+  ```
+
 - GET: "/getClients" (Params: token(string), id(?number), guid(?string), first(?string), last(?string), street(?string), city(?string), zip(?number)): Permit to get a list of the clients in functions of the parameters.
   The response looks like :
 
@@ -110,3 +127,9 @@ You can configure the anthentication in "./authentication.json". The file should
 
 If you have some issues installing the server on windows, follow instructions of this :
 https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/troubleshooting.md
+
+# ToDo List
+
+- SQL Procedure to remove expired tokens
+- Token duration to 0 wich means no token duration.
+- Logs in InitDB
