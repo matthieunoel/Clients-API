@@ -51,7 +51,7 @@ export class RootService {
 
             logger.log(`initDB[${uuid.slice(0, 6)}] - ` + `Database initialisation.` + ` - (${performance.now() - perfStart}ms)`)
 
-            const db = new Database('./db/SQLite.db')
+            const db = new Database(Config.dbName)
             let request: string = ''
 
             // Setting Token table
@@ -102,7 +102,7 @@ export class RootService {
 
         try {
 
-            const db = new Database('./db/SQLite.db')
+            const db = new Database(Config.dbName)
             let request: string = `DELETE FROM token WHERE datetime(expiration) < datetime('now', 'localtime')`
             // datetime('now', 'localtime', '+${Config.tokenDuration} minutes'))
             db.prepare(request).run()
@@ -138,7 +138,7 @@ export class RootService {
 
                 if (loggedIn) {
 
-                    const db = new Database('./db/SQLite.db')
+                    const db = new Database(Config.dbName)
                     const token = uuidv1()
                     let request: string = `INSERT INTO token (token, permissions, expiration) VALUES ('${token}', ${authLevel}, datetime('now', 'localtime', '+${Config.tokenDuration} minutes'))`
                     db.prepare(request).run()
@@ -193,7 +193,7 @@ export class RootService {
 
             try {
 
-                const db = new Database('./db/SQLite.db')
+                const db = new Database(Config.dbName)
                 let request: string = ''
                 let conditions: string = ''
                 let errors: IError[] = []
@@ -492,6 +492,9 @@ export class RootService {
 
                 if (Config.authentication) {
                     const res: ITokenTestResponse = (await this.testToken(token, 10, false)) as ITokenTestResponse
+                    if (Config.tokenDuration === 0) {
+                        res.expiration = '-'
+                    }
                     if (!res.validity) {
                         const perfEnd = performance.now() - perfStart
                         if (token === undefined) {
@@ -594,7 +597,7 @@ export class RootService {
 
                 token = this.formatStrForSQL(token)
 
-                const db = new Database('./db/SQLite.db')
+                const db = new Database(Config.dbName)
                 const request: string = `SELECT permissions, expiration FROM token WHERE token = '${token}';`
                 const res: ITokenTestResponse[] = db.prepare(request).all()
 

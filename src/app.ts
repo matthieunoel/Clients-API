@@ -11,14 +11,13 @@ useContainer(Container)
 export class Config {
 
   public static Port: number = 5000
-  // public static Ip: string = '192.168.1.105'
   public static Ip: string = '127.0.0.1'
   public static OnLinux: boolean = false
   public static devToolsActivated: boolean = false
-  // tslint:disable-next-line: ban-types
   public static authentication: boolean = require('../authentication.json').authentication
   public static tokenDuration: number = require('../authentication.json').tokenDuration
   public static loginList: ILogin[] = require('../authentication.json').loginList
+  public static dbName: string = './db/SQLite.db'
 
 }
 
