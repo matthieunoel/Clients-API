@@ -578,7 +578,7 @@ export class RootService {
                 if (res.length === 0) {
                     validity = false
                 }
-                else if (permissionAsked < res[0].permissions || new Date(res[0].expiration) < new Date()) {
+                else if ((Config.tokenDuration > 0) && (permissionAsked < res[0].permissions || new Date(res[0].expiration) < new Date())) {
                     validity = false
                 }
                 else {

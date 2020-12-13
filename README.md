@@ -34,7 +34,7 @@ You can configure the anthentication in "./authentication.json". The file should
 ```
 
 - "authentication" indicates if the API needs and anthentication system or not.
-- "tokenDuration" indicates the time of validity of a token (in minutes)
+- "tokenDuration" indicates the time of validity of a token (in minutes). You can set the value to 0 to deactivate the token duration.
 - "loginList" is the list of every logins of the API. In this object you can find the login, the password and the authentication level ("authLevel"). The lower the number is, the higher its permissions are. 0 are for admins and 10 for basic users.
 
 # Request list :
@@ -61,7 +61,7 @@ You can configure the anthentication in "./authentication.json". The file should
   ```
 
 - GET "/getTokenValidity" (Params: token(string)): Give you the validity and the death date of a token.
-  The response should looks like :
+  The response should looks like (deathDate is a UTC date):
 
   ```json
   {
@@ -131,4 +131,4 @@ https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/troubleshooting.md
 # ToDo List
 
 - SQL Procedure to remove expired tokens
-- Token duration to 0 wich means no token duration.
+- Full configuration from JSON + dbname config

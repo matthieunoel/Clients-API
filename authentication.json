@@ -1,6 +1,6 @@
 {
     "authentication": true,
-    "tokenDuration": 60,
+    "tokenDuration": 0,
     "loginList": [{
         "login": "mnoel",
         "password": "mdp",
