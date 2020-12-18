@@ -1,0 +1,135 @@
+html body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    min-width: 100vw;
+    background-color: whitesmoke;
+    /* background-color: #ffd74c; */
+    /* background-image: radial-gradient(circle at 52% 84%, rgba(194, 194, 194, 0.06) 0%, rgba(194, 194, 194, 0.06) 18%, transparent 18%, transparent 100%), radial-gradient(circle at 38% 97%, rgba(239, 239, 239, 0.06) 0%, rgba(239, 239, 239, 0.06) 20%, transparent 20%, transparent 100%), radial-gradient(circle at 86% 17%, rgba(210, 210, 210, 0.06) 0%, rgba(210, 210, 210, 0.06) 61%, transparent 61%, transparent 100%), radial-gradient(circle at 6% 48%, rgba(91, 91, 91, 0.06) 0%, rgba(91, 91, 91, 0.06) 27%, transparent 27%, transparent 100%), radial-gradient(circle at 27% 63%, rgba(86, 86, 86, 0.06) 0%, rgba(86, 86, 86, 0.06) 30%, transparent 30%, transparent 100%), radial-gradient(circle at 2% 91%, rgba(182, 182, 182, 0.06) 0%, rgba(182, 182, 182, 0.06) 29%, transparent 29%, transparent 100%), linear-gradient(90deg, #e7a32c, #ffd74c); */
+    /* background-image: linear-gradient(90deg, rgba(254, 177, 8, 0.5) 0%, rgba(254, 177, 8, 0.5) 19%, transparent 19%, transparent 43%, transparent 43%, transparent 55%, rgba(228, 150, 33, 0.5) 55%, rgba(228, 150, 33, 0.5) 100%), linear-gradient(135deg, rgb(254, 177, 8) 0%, rgb(254, 177, 8) 2%, transparent 2%, transparent 19%, rgb(203, 123, 58) 19%, rgb(203, 123, 58) 57%, rgb(228, 150, 33) 57%, rgb(228, 150, 33) 100%), linear-gradient(90deg, rgb(255, 255, 255), rgb(255, 255, 255)); */
+    /* background-image: linear-gradient(45deg, #e7a32c, #ffd74c); */
+    overflow-x: hidden;
+    font-family: Monospace;
+}
+
+.component {
+    border: 1px grey solid;
+    box-shadow: 4px 8px 0px #dbdbdb;
+    background-color: white;
+    width: 90%;
+    margin-top: 15px;
+    padding: 10px;
+    /* border-radius: 5px; */
+    background-image: linear-gradient(45deg, #f1be16, #ffd74c);
+    /* background-attachment: fixed; */
+}
+
+.component h1 {
+    margin: 0;
+}
+
+
+/* #formSrc table, th, td {
+    border: none;
+    border-collapse: collapse;
+}
+
+#formSrc th, td {
+    padding: 5px 0px;
+} */
+
+#formSrc table,
+#formSrc th,
+#formSrc td,
+#formLogin table,
+#formLogin th,
+#formLogin td {
+    border-collapse: collapse;
+    border: none;
+}
+
+#formSrc table,
+#formLogin table {
+    margin-bottom: 5px;
+}
+
+#formSrc td,
+#formLogin td {
+    padding-right: 10px;
+}
+
+#loginError td {
+    padding: 10px 0px;
+    /* background-color: coral; */
+    font-weight: bolder;
+}
+
+#dataInsertComponent {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#dataInsertComponent table,
+#dataInsertComponent th,
+#dataInsertComponent td {
+    border-collapse: collapse;
+}
+
+#dataInsertComponent th,
+#dataInsertComponent td {
+    border: 1px solid black;
+    padding: 15px;
+}
+
+#dataInsertComponent th {
+    text-align: left;
+}
+
+#dataInsertComponent table {
+    border-spacing: 5px;
+    width: 90%;
+}
+
+#dataInsertComponent h3 {
+    margin: 0;
+    padding: 0;
+}
+
+#nbRow {
+    border: none!important;
+    padding: 15px 5px!important;
+}
+
+#resTime {
+    border: none!important;
+    text-align: right;
+    padding: 15px 5px!important;
+}
+
+#loadingTd {
+    padding: 0!important;
+    padding-left: 15px!important;
+    background-color: white;
+}
+
+#loading {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#loadingPic {
+    height: 100px;
+    width: 100px;
+    overflow: hidden;
+    background-image: url("./loading.gif");
+    background-position: center;
+    background-size: 250px;
+}

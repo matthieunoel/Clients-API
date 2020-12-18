@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+    <div class="component">
+        <h1>API CLIENTS - Coté client</h1>
+    </div>
+
+    <div class="component" id="formLoginComponent" style="display: none;">
+        <form id="formLogin" action="?" method="GET">
+            <input type="hidden" name="login" value="true">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            Login
+                        </td>
+                        <td>
+                            <input type="text" id="formLogin.login" name="user">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Password
+                        </td>
+                        <td>
+                            <input type="password" id="formLogin.password" name="password">
+                        </td>
+                    </tr>
+                    <tr id="loginError" style="display: none;">
+                        <td colspan="2">loginError</td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" value="Valider">
+        </form>
+    </div>
+
+    <div class="component" id="formSrcComponent" style="display: none;">
+        <form id="formSrc" action="?" method="GET">
+            <input type="hidden" id="tokenHiddenInput" name="token">
+            <input type="hidden" name="search" value="true">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            GUID
+                        </td>
+                        <td>
+                            <input type="text" id="formSrc.guid" name="guid">
+                        </td>
+                        <td></td>
+                        <td>
+                            City
+                        </td>
+                        <td>
+                            <input type="text" id="formSrc.city" name="city">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            First
+                        </td>
+                        <td>
+                            <input type="text" id="formSrc.first" name="first">
+                        </td>
+                        <td></td>
+                        <td>
+                            Street
+                        </td>
+                        <td>
+                            <input type="text" id="formSrc.street" name="street">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Last
+                        </td>
+                        <td>
+                            <input type="text" id="formSrc.last" name="last">
+                        </td>
+                        <td></td>
+                        <td>
+                            ZIP
+                        </td>
+                        <td>
+                            <input type="text" id="formSrc.zip" name="zip">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" value="Valider">
+        </form>
+    </div>
+
+    <div class="component" id="dataInsertComponent" style="display: none;">
+        <table id="dataInsert">
+            <tbody>
+                <tr>
+                    <td id="nbRow" rowspan="1" colspan="3">
+                        <h3>Nombre de lignes : -</h3>
+                    </td>
+                    <td id="resTime" rowspan="1" colspan="3">
+                        <h3>Temps de réponse: -s / -s</h3>
+                    </td>
+                </tr>
+                <tr bgcolor="#cccccc">
+                    <th>
+                        guid
+                    </th>
+                    <th>
+                        first
+                    </th>
+                    <th>
+                        last
+                    </th>
+                    <th>
+                        city
+                    </th>
+                    <th>
+                        street
+                    </th>
+                    <th>
+                        zip
+                    </th>
+                </tr>
+                <tr>
+                    <td colspan="6" id="loadingTd">
+                        <div id="loading">
+                            <div>Chargement ...</div>
+                            <div id="loadingPic"></div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function getErrMessageFromErrCode(code) {
+            var errMessage = ''
+            switch (code) {
+                case 10:
+                    errMessage = "Une erreur est apparue lors du login."
+                    break;
+                case 11:
+                    errMessage = "Login ou mot de passe incorrect."
+                    break;
+                case 12:
+                    errMessage = "Token périmé ou invalide."
+                    break;
+                case 20:
+                    errMessage = "Une erreur est apparue lors de la récupération des données."
+                    break;
+                case 21:
+                    errMessage = "Le champ GUID est incorrect"
+                    break;
+                case 22:
+                    errMessage = "Le champ First est incorrect"
+                    break;
+                case 23:
+                    errMessage = "Le champ Last est incorrect"
+                    break;
+                case 24:
+                    errMessage = "Le champ City est incorrect"
+                    break;
+                case 25:
+                    errMessage = "Le champ Street est incorrect"
+                    break;
+                case 26:
+                    errMessage = "Le champ ZIP est incorrect"
+                    break;
+                default:
+                    errMessage = "Une erreur est apparue."
+                    break;
+            }
+
+            return errMessage
+        }
+
+        async function testToken(token) {
+            return new Promise((resolve, reject) => {
+                if (token) {
+                    var tokenOk = false
+                    var req = new XMLHttpRequest()
+                    req.onreadystatechange = function() {
+                        if (this.readyState === this.DONE) {
+                            if (this.status === 200) {
+                                console.log('reponse(200): ', this.responseText)
+                                resolve(JSON.parse(this.responseText).response[0].validity)
+                            } else {
+                                console.error('reponse(' + this.status + '):' + this.responseText)
+                                resolve(false)
+                            }
+                        }
+                    }
+                    var url = `http://api.clients.webqbe.com/getTokenValidity?token=${token}`
+                    console.log('Asking "' + url + '"')
+                    req.open("GET", url, true)
+                    req.send()
+                } else {
+                    resolve(false)
+                }
+            });
+        }
+
+        async function login(login, password) {
+
+            var token = ''
+            var loginError = ''
+
+            // console.log('login:', login)
+            // console.log('password:', password)
+
+            if (login) {
+                async function getToken(login, password) {
+                    return new Promise((resolve, reject) => {
+                        var tokenOk = false
+                        var req = new XMLHttpRequest()
+                        req.onreadystatechange = function() {
+                            if (this.readyState === this.DONE) {
+                                if (this.status === 200) {
+                                    console.log('reponse(200): ', this.responseText)
+                                    return resolve(JSON.parse(this.responseText).token)
+                                } else {
+                                    console.error('reponse(' + this.status + '):' + this.responseText)
+                                    loginError = getErrMessageFromErrCode(JSON.parse(this.responseText).errors[0].code)
+                                    return resolve('')
+                                }
+                            }
+                        }
+                        var url = `http://api.clients.webqbe.com/getToken?login=${login}&password=${password}`
+                        console.log('Asking "' + url + '"')
+                        req.open("GET", url, true)
+                        req.send()
+                    });
+                }
+                token = await getToken(login, password)
+            }
+
+            var url = ''
+
+            if (token) {
+                url = `${window.location.href.split('?')[0]}?token=${token}`
+            } else {
+                url = `${window.location.href.split('?')[0]}?user=${login}&loginError=${encodeURIComponent(loginError)}`
+            }
+
+            // console.log('NAVIGATION:', url);
+            window.location.href = url
+
+        }
+
+        async function search(token, guid, first, last, city, street, zip) {
+
+            var timeStart = performance.now();
+
+            var data = ''
+
+            // console.log('login:', login)
+            // console.log('password:', password)
+
+            async function getClients(token, guid, first, last, city, street, zip) {
+                return new Promise((resolve, reject) => {
+                    var tokenOk = false
+                    var req = new XMLHttpRequest()
+                    req.onreadystatechange = function() {
+                            if (this.readyState === this.DONE) {
+                                if (this.status === 200) {
+                                    console.log('reponse(200): ', JSON.parse(this.responseText))
+                                    resolve(JSON.parse(this.responseText))
+                                } else {
+                                    console.error('reponse(' + this.status + '):' + this.responseText)
+                                    resolve(this.responseText)
+                                }
+                            }
+                        }
+                        // var url = `http://api.clients.webqbe.com/getClients?token=${token}&first=${first}&last=${last}`
+                    var url = `http://api.clients.webqbe.com/getClients?token=${token}`
+                    if (guid) {
+                        url += `&guid=${encodeURIComponent(guid)}`
+                    }
+                    if (first) {
+                        url += `&first=${encodeURIComponent(first)}`
+                    }
+                    if (last) {
+                        url += `&last=${encodeURIComponent(last)}`
+                    }
+                    if (city) {
+                        url += `&city=${encodeURIComponent(city)}`
+                    }
+                    if (street) {
+                        url += `&street=${encodeURIComponent(street)}`
+                    }
+                    if (zip) {
+                        url += `&zip=${encodeURIComponent(zip)}`
+                    }
+                    console.log('Asking "' + url + '"')
+                    req.open("GET", url, true)
+                    req.send()
+                });
+            }
+
+            document.getElementById('dataInsertComponent').style.display = ''
+            data = await getClients(token, guid, first, last, city, street, zip)
+            console.log('DATA:', data.response)
+            document.getElementById('nbRow').children[0].textContent = `Nombre de lignes : ${data.responseSize}`
+            document.getElementById('resTime').children[0].textContent = `Temps de réponse: ${(data.performanceMs / 1000).toFixed(3)}s / ${((performance.now() - timeStart) / 1000).toFixed(3)}s`
+            document.getElementById('dataInsert').children[0].children[2].remove()
+            if (data.responseSize >= 100000) {
+                elementTr = document.createElement('tr')
+                elementTr.innerHTML = `<td colspan="6">Le nombre de requêtes depasse des 100000(${data.responseSize}). Impossible de les afficher.</td>`
+                elementTr.style = 'background-color: #fff'
+                document.getElementById('dataInsert').appendChild(elementTr)
+            } else {
+                var even = false
+                data.response.forEach(client => {
+                    elementTr = document.createElement('tr')
+                    if (even) {
+                        even = false
+                        elementTr.style = 'background-color: #eee'
+                    } else {
+                        even = true
+                        elementTr.style = 'background-color: #fff'
+                    }
+                    elementTr.innerHTML = `<td>${client.guid}</td><td>${client.first}</td><td>${client.last}</td><td>${client.city}</td><td>${client.street}</td><td>${client.zip}</td>`
+                    document.getElementById('dataInsert').appendChild(elementTr)
+                });
+            }
+
+        }
+
+        // ----------------------------------------------------------------------------------------------------
+
+        async function start() {
+
+            token = new URLSearchParams(window.location.search).get("token")
+            var tokenOk = (await testToken(token))
+            console.log('tokenValidity:', tokenOk)
+
+            if (tokenOk) {
+                document.getElementById('formSrcComponent').style.display = ''
+                document.getElementById('tokenHiddenInput').value = token
+                document.getElementById('formSrc.guid').value = new URLSearchParams(window.location.search).get("guid")
+                document.getElementById('formSrc.first').value = new URLSearchParams(window.location.search).get("first")
+                document.getElementById('formSrc.last').value = new URLSearchParams(window.location.search).get("last")
+                document.getElementById('formSrc.city').value = new URLSearchParams(window.location.search).get("city")
+                document.getElementById('formSrc.street').value = new URLSearchParams(window.location.search).get("street")
+                document.getElementById('formSrc.zip').value = new URLSearchParams(window.location.search).get("zip")
+            } else {
+                document.getElementById('formLoginComponent').style.display = ''
+                document.getElementById('formLogin.login').value = new URLSearchParams(window.location.search).get("user")
+                document.getElementById('formLogin.password').value = new URLSearchParams(window.location.search).get("password")
+                var loginError = new URLSearchParams(window.location.search).get("loginError")
+                if (loginError) {
+                    console.log('loginError:', loginError)
+                    document.getElementById('loginError').style.display = ''
+                    document.getElementById('loginError').children[0].textContent = loginError
+                }
+                // document.getElementById('formLogin.login').value = 'mnoel'
+                // document.getElementById('formLogin.password').value = 'mdp'
+            }
+
+            if (new URLSearchParams(window.location.search).get("login")) {
+                login(
+                    new URLSearchParams(window.location.search).get("user"),
+                    new URLSearchParams(window.location.search).get("password")
+                )
+            }
+
+            if (new URLSearchParams(window.location.search).get("search")) {
+                search(
+                    token,
+                    new URLSearchParams(window.location.search).get("guid"),
+                    new URLSearchParams(window.location.search).get("first"),
+                    new URLSearchParams(window.location.search).get("last"),
+                    new URLSearchParams(window.location.search).get("city"),
+                    new URLSearchParams(window.location.search).get("street"),
+                    new URLSearchParams(window.location.search).get("zip")
+                )
+            }
+
+        }
+        start()
+    </script>
+
+</body>
+
+</html>
