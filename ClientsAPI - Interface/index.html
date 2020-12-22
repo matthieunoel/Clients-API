@@ -4,12 +4,20 @@
 
 <head>
     <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <title>API CLIENTS</title>
 </head>
 
 <body>
 
-    <div class="component">
-        <h1>API CLIENTS - Coté client</h1>
+    <div class="component" id="titleComponent">
+        <div id="title">
+            <h1>API CLIENTS - Coté client</h1>
+        </div>
+        <!-- <img src="cube.png" alt="cube"> -->
+        <!-- <div id="logoPic"></div> -->
+        <a href="http://api.clients.webqbe.com/" id="logoPic" target="_blank"></a>
     </div>
 
     <div class="component" id="formLoginComponent" style="display: none;">
@@ -35,6 +43,9 @@
                     </tr>
                     <tr id="loginError" style="display: none;">
                         <td colspan="2">loginError</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="color: grey;">Note de developpement : le login<br/>est "mnoel" et le mot de passe est "mdp"</td>
                     </tr>
                 </tbody>
             </table>
@@ -96,6 +107,7 @@
                 </tbody>
             </table>
             <input type="submit" value="Valider">
+            <input type="reset" value="Effacer">
         </form>
     </div>
 

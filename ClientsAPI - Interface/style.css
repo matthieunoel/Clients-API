@@ -24,12 +24,56 @@ html body {
     margin-top: 15px;
     padding: 10px;
     /* border-radius: 5px; */
-    background-image: linear-gradient(45deg, #f1be16, #ffd74c);
     /* background-attachment: fixed; */
 }
 
 .component h1 {
     margin: 0;
+}
+
+#titleComponent {
+    /* background-image: linear-gradient(45deg, #f1be16, #ffd74c); */
+    /* background-color: #ffd74c; */
+    border: none;
+    box-shadow: none;
+    background-color: #ffffff00;
+    margin-top: 15px;
+    padding: 0px;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(90vw + 20px);
+}
+
+#title {
+    flex: 1;
+    background-color: #ffd74c;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border: 1px grey solid;
+    box-shadow: 4px 8px 0px #dbdbdb;
+    padding-left: 10px;
+}
+
+#logoPic {
+    height: 100px;
+    width: 100px;
+    overflow: hidden;
+    background-image: url("./cube.png");
+    background-position: center;
+    background-size: 125px;
+    border: 1px grey solid;
+    box-shadow: 4px 8px 0px #dbdbdb;
+    margin-left: 20px;
+    transition: 150ms linear;
+}
+
+#logoPic:hover {
+    background-size: 150px;
+    transition: 100ms linear;
 }
 
 
@@ -54,7 +98,7 @@ html body {
 
 #formSrc table,
 #formLogin table {
-    margin-bottom: 5px;
+    margin: 15px;
 }
 
 #formSrc td,
@@ -94,6 +138,7 @@ html body {
 #dataInsertComponent table {
     border-spacing: 5px;
     width: 90%;
+    margin-bottom: 15px;
 }
 
 #dataInsertComponent h3 {
@@ -115,7 +160,8 @@ html body {
 #loadingTd {
     padding: 0!important;
     padding-left: 15px!important;
-    background-color: white;
+    background-color: tomato;
+    background-image: linear-gradient(90deg, #ffd74c 20%, #ffffff 90%);
 }
 
 #loading {
