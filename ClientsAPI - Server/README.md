@@ -67,7 +67,7 @@ You can configure the anthentication in "./authentication.json". The file should
   {
     "status": "OK",
     "performanceMs": 0.9026990234851837,
-    "responseSize": 1,
+    "responseRealSize": 1,
     "response": [
       {
         "validity": true,
