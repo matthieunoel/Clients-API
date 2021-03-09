@@ -1,5 +1,3 @@
-# NOT UP TO DATE !
-
 # Installation
 
 ```sh
@@ -79,14 +77,14 @@ You can configure the anthentication in "./authentication.json". The file should
   }
   ```
 
-- GET: "/getClients" (Params: token(string), id(?number), guid(?string), first(?string), last(?string), street(?string), city(?string), zip(?number)): Permit to get a list of the clients in functions of the parameters.
+- GET: "/getClients" (Params: token(string), id(?number), guid(?string), first(?string), last(?string), street(?string), city(?string), zip(?number), rowLimit(?number), rowOffset(?number)): Permit to get a list of the clients in functions of the parameters.
   The response looks like :
 
   ```json
   {
       "status": "OK",
       "performanceMs": 141.21329998970032,
-      "responseSize": 1030,
+      "responseRealSize": 1030,
       "response": [
           {
               "id": 1,
