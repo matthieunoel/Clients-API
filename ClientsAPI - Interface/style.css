@@ -179,3 +179,52 @@ html body {
     background-position: center;
     background-size: 250px;
 }
+
+.paginationTd {
+    border: none!important;
+    padding: 7px 0px!important;
+}
+
+.paginationZone {
+    display: flex;
+    flex-flow: row;
+    /* justify-content: space-around; */
+    /* align-items: center; */
+    border: grey solid 1px;
+    padding: 7px;
+}
+
+.paginationLeft {
+    flex: 4;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.inputNbLignes {
+    margin: 3px;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+    border-bottom: 1px grey solid;
+    border-radius: 0%;
+    position: relative;
+    top: 2px;
+}
+
+.paginationBigRight {
+    flex: 4;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.paginationBigRight button {
+    margin: 0px 3px;
+}
+
+.paginationBigRightSpan {
+    margin: 0px 6px;
+}

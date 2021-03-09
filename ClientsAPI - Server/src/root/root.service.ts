@@ -6,7 +6,7 @@ const Database = require('better-sqlite3')
 import { performance } from 'perf_hooks'
 import { couldStartTrivia } from 'typescript'
 import { Config } from '../app'
-import { IClient, IClientResult, IError, ILogin, ITokenResult, ITokenTestResponse, ITolenValidityResponse } from './root.interfaces'
+import { IClient, IClientResult, IError, ILogin, ITokenResult, ITokenTestResponse, ITokenValidityResponse } from './root.interfaces'
 import { Logger } from './root.logSystem'
 
 export class RootService {
@@ -184,7 +184,7 @@ export class RootService {
         })
     }
 
-    public async getClients(token: string, id: number, guid: string, first: string, last: string, street: string, city: string, zip: number): Promise<IClientResult> {
+    public async getClients(token: string, id: number, guid: string, first: string, last: string, street: string, city: string, zip: number, rowLimit: number, rowOffset: number): Promise<IClientResult> {
 
         const perfStart = performance.now()
         const uuid: string = uuidv1()
@@ -230,6 +230,36 @@ export class RootService {
                         message: `La valeur passée via zip n'est pas un nombre.`
                     })
                 }
+                if (isNaN(rowLimit) && rowLimit !== undefined) {
+                    errors.push({
+                        code: 28,
+                        message: `La valeur passée via rowLimit n'est pas un nombre.`
+                    })
+                }
+                if (rowLimit < -1) {
+                    errors.push({
+                        code: 28,
+                        message: `La valeur passée via rowLimit ne peut pas être inférieure à -1.`
+                    })
+                }
+                if (isNaN(rowOffset) && rowOffset !== undefined) {
+                    errors.push({
+                        code: 29,
+                        message: `La valeur passée via rowOffset n'est pas un nombre.`
+                    })
+                }
+                if (rowOffset < 0) {
+                    errors.push({
+                        code: 28,
+                        message: `La valeur passée via rowOffset ne peut pas être négative.`
+                    })
+                }
+                // if (rowOffset !== undefined && rowLimit === undefined) {
+                //     errors.push({
+                //         code: 29,
+                //         message: `rowOffset est définis mais pas rowLimit.`
+                //     })
+                // }
 
                 if (errors.length > 0) {
                     const perfEnd = performance.now() - perfStart
@@ -310,18 +340,40 @@ export class RootService {
                     }
                 }
 
-                request += conditions + ';'
+                request += conditions
+
+                if (rowLimit !== undefined && rowOffset === undefined) {
+                    request += ` LIMIT ${rowLimit}`
+                }
+                else if (rowLimit === undefined && rowOffset !== undefined) {
+                    request += ` LIMIT -1 OFFSET ${rowOffset}`
+                }
+                else if (rowLimit !== undefined && rowOffset !== undefined) {
+                    request += ` LIMIT ${rowLimit} OFFSET ${rowOffset}`
+                }
+
+
+                request += ';'
 
                 this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Executing request : ${request}` + ` - (${performance.now() - perfStart}ms)`)
 
                 let res: IClient[] = db.prepare(request).all()
+
+                let responseRealSize = res.length
+
+                if (rowLimit !== undefined || rowOffset !== undefined) {
+                    const requestCount = 'SELECT COUNT(*) as counter FROM client ' + conditions + ';'
+                    this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Executing request : ${requestCount}` + ` - (${performance.now() - perfStart}ms)`)
+                    let res: any = db.prepare(requestCount).get()
+                    responseRealSize = res.counter
+                }
 
                 const perfEnd = performance.now() - perfStart
                 this.logger.log(`getClients[${uuid.slice(0, 6)}.] - ` + `Process completed successfully.` + ` - (${perfEnd}ms)`)
                 return resolve({
                     'status': 'OK',
                     'performanceMs': perfEnd,
-                    'responseSize': res.length,
+                    'responseRealSize': responseRealSize,
                     'response': res
                 })
 
@@ -486,7 +538,7 @@ export class RootService {
         const perfStart = performance.now()
         const uuid: string = uuidv1()
 
-        return new Promise<ITolenValidityResponse>(async (resolve, reject) => {
+        return new Promise<ITokenValidityResponse>(async (resolve, reject) => {
 
             try {
 
@@ -514,7 +566,7 @@ export class RootService {
                             return resolve({
                                 'status': 'OK',
                                 'performanceMs': perfEnd,
-                                'responseSize': 1,
+                                'responseRealSize': 1,
                                 'response': [{
                                     'validity': false,
                                     'deathDate': new Date(res.expiration)
@@ -528,7 +580,7 @@ export class RootService {
                         return resolve({
                             'status': 'OK',
                             'performanceMs': perfEnd,
-                            'responseSize': 1,
+                            'responseRealSize': 1,
                             'response': [{
                                 'validity': true,
                                 'deathDate': new Date(res.expiration)
@@ -542,7 +594,7 @@ export class RootService {
                     return resolve({
                         'status': 'OK',
                         'performanceMs': perfEnd,
-                        'responseSize': 1,
+                        'responseRealSize': 1,
                         'response': [{
                             'validity': true,
                             'deathDate': '-'

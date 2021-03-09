@@ -3,7 +3,7 @@ import { Response } from 'express'
 import { RootService } from './root.service'
 import bodyParser = require('body-parser')
 import { Logger } from './root.logSystem'
-import { IRootResult, IClient, IClientResult, ITokenResult, ITolenValidityResponse } from './root.interfaces'
+import { IRootResult, IClient, IClientResult, ITokenResult, ITokenValidityResponse } from './root.interfaces'
 
 const fs = require('fs')
 
@@ -44,7 +44,7 @@ export class RootController {
     @Get('/getTokenValidity')
     async getTokenValidity(
         @QueryParam('token', { required: false }) token: string
-    ): Promise<ITolenValidityResponse> {
+    ): Promise<ITokenValidityResponse> {
         this.logger.reqLog(`Request at "/getTokenValidity". Parameters are : {token: ${token}}`)
         return await this.rootService.getTokenValidity(token)
     }
@@ -60,10 +60,12 @@ export class RootController {
         @QueryParam('last', { required: false }) last: string,
         @QueryParam('street', { required: false }) street: string,
         @QueryParam('city', { required: false }) city: string,
-        @QueryParam('zip', { required: false }) zip: number
+        @QueryParam('zip', { required: false }) zip: number,
+        @QueryParam('rowLimit', { required: false }) rowLimit: number,
+        @QueryParam('rowOffset', { required: false }) rowOffset: number
     ): Promise<IClientResult> {
-        this.logger.reqLog(`Request at "/getClients". Parameters are : {id: ${id}, guid: ${guid}, first: ${first}, last: ${last}, street: ${street}, city: ${city}, zip: ${zip}}`)
-        return await this.rootService.getClients(token, id, guid, first, last, street, city, zip)
+        this.logger.reqLog(`Request at "/getClients". Parameters are : {id: ${id}, guid: ${guid}, first: ${first}, last: ${last}, street: ${street}, city: ${city}, zip: ${zip}, rowLimit: ${rowLimit}, rowOffset: ${rowOffset}}`)
+        return await this.rootService.getClients(token, id, guid, first, last, street, city, zip, rowLimit, rowOffset)
     }
 
     @ContentType('text/plain')

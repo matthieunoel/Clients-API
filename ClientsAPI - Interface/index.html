@@ -17,7 +17,8 @@
         </div>
         <!-- <img src="cube.png" alt="cube"> -->
         <!-- <div id="logoPic"></div> -->
-        <a href="http://api.clients.webqbe.com/" id="logoPic" target="_blank"></a>
+        <!-- <a href="http://api.clients.webqbe.com/" id="logoPic" target="_blank"></a> -->
+        <a href="http://localhost:5000/" id="logoPic" target="_blank"></a>
     </div>
 
     <div class="component" id="formLoginComponent" style="display: none;">
@@ -57,6 +58,7 @@
         <form id="formSrc" action="?" method="GET">
             <input type="hidden" id="tokenHiddenInput" name="token">
             <input type="hidden" name="search" value="true">
+            <input type="hidden" id="nbLignesHiddenInput"name="nbLignes" value="">
             <table>
                 <tbody>
                     <tr>
@@ -112,6 +114,7 @@
     </div>
 
     <div class="component" id="dataInsertComponent" style="display: none;">
+        <input type="hidden" id="pageHiddenInput" name="page" value="">
         <table id="dataInsert">
             <tbody>
                 <tr>
@@ -122,6 +125,41 @@
                         <h3>Temps de réponse: -s / -s</h3>
                     </td>
                 </tr>
+
+                <tr>
+                    <td rowspan="1" colspan="6" class="paginationTd">
+                        <!-- Nombre de lignes par pages :
+                        <input type="number" name="nbLignes" id="inputNbLignes">
+                        <div>Middle + Right</div> -->
+
+                        <div class="paginationZone">
+                            <div class="paginationLeft">
+                                Nombre de lignes par pages :
+                                <!-- <input type="number" name="nbLignes" id="inputNbLignes"> -->
+                                <select id='selectNbLignes' name="nbLignes" class="inputNbLignes" size="1" onChange="editNbLignes(event)">
+                                    <!-- <option>5</option>
+                                    <option>15</option>
+                                    <option>25</option>
+                                    <option>100</option>
+                                    <option>500</option>
+                                    <option>1000</option>
+                                    <option>5000</option>
+                                    <option>10000</option>
+                                    <option>500000</option> -->
+                                </select>
+                            </div>
+                            <div class="paginationBigRight">
+                                <!-- <button class="paginationGoStart" onclick="goStart()">|<</button> -->
+                                <button class="paginationGoBefore" onclick="goBefore()"><</button>
+                                <span class="paginationBigRightSpan">1-100</span>
+                                <button class="paginationGoNext" onclick="goNext()">></button>
+                                <!-- <button class="paginationGoEnd" onclick="goEnd()">>|</button> -->
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+
                 <tr bgcolor="#cccccc">
                     <th>
                         guid
@@ -155,6 +193,10 @@
     </div>
 
     <script>
+
+        const baseUrl = document.getElementById('logoPic').href.toString()
+        console.log('baseUrl :', baseUrl)
+
         function getErrMessageFromErrCode(code) {
             var errMessage = ''
             switch (code) {
@@ -212,7 +254,7 @@
                             }
                         }
                     }
-                    var url = `http://api.clients.webqbe.com/getTokenValidity?token=${token}`
+                    var url = `${baseUrl}getTokenValidity?token=${token}`
                     console.log('Asking "' + url + '"')
                     req.open("GET", url, true)
                     req.send()
@@ -247,7 +289,7 @@
                                 }
                             }
                         }
-                        var url = `http://api.clients.webqbe.com/getToken?login=${login}&password=${password}`
+                        var url = `${baseUrl}getToken?login=${login}&password=${password}`
                         console.log('Asking "' + url + '"')
                         req.open("GET", url, true)
                         req.send()
@@ -293,8 +335,8 @@
                                 }
                             }
                         }
-                        // var url = `http://api.clients.webqbe.com/getClients?token=${token}&first=${first}&last=${last}`
-                    var url = `http://api.clients.webqbe.com/getClients?token=${token}`
+
+                    var url = `${baseUrl}getClients?token=${token}`
                     if (guid) {
                         url += `&guid=${encodeURIComponent(guid)}`
                     }
@@ -313,6 +355,8 @@
                     if (zip) {
                         url += `&zip=${encodeURIComponent(zip)}`
                     }
+                    url += `&rowLimit=${encodeURIComponent(document.getElementById('nbLignesHiddenInput').value)}`
+                    url += `&rowOffset=${encodeURIComponent((Number(document.getElementById('pageHiddenInput').value) - 1) * Number(document.getElementById('selectNbLignes').value))}`
                     console.log('Asking "' + url + '"')
                     req.open("GET", url, true)
                     req.send()
@@ -322,15 +366,15 @@
             document.getElementById('dataInsertComponent').style.display = ''
             data = await getClients(token, guid, first, last, city, street, zip)
             console.log('DATA:', data.response)
-            document.getElementById('nbRow').children[0].textContent = `Nombre de lignes : ${data.responseSize}`
+            document.getElementById('nbRow').children[0].textContent = `Nombre de lignes : ${data.responseRealSize}`
             document.getElementById('resTime').children[0].textContent = `Temps de réponse: ${(data.performanceMs / 1000).toFixed(3)}s / ${((performance.now() - timeStart) / 1000).toFixed(3)}s`
-            document.getElementById('dataInsert').children[0].children[2].remove()
-            if (data.responseSize >= 100000) {
-                elementTr = document.createElement('tr')
-                elementTr.innerHTML = `<td colspan="6">Le nombre de requêtes depasse des 100000(${data.responseSize}). Impossible de les afficher.</td>`
-                elementTr.style = 'background-color: #fff'
-                document.getElementById('dataInsert').appendChild(elementTr)
-            } else {
+            document.getElementById('dataInsert').children[0].children[3].remove()
+            // if (data.responseRealSize >= 100000) {
+                // elementTr = document.createElement('tr')
+                // elementTr.innerHTML = `<td colspan="6">Le nombre de requêtes depasse des 100000(${data.responseRealSize}). Impossible de les afficher.</td>`
+                // elementTr.style = 'background-color: #fff'
+                // document.getElementById('dataInsert').appendChild(elementTr)
+            // } else {
                 var even = false
                 data.response.forEach(client => {
                     elementTr = document.createElement('tr')
@@ -344,8 +388,57 @@
                     elementTr.innerHTML = `<td>${client.guid}</td><td>${client.first}</td><td>${client.last}</td><td>${client.city}</td><td>${client.street}</td><td>${client.zip}</td>`
                     document.getElementById('dataInsert').appendChild(elementTr)
                 });
-            }
+            // }
 
+        }
+
+        // ----------------------------------------------------------------------------------------------------
+
+        function goStart() {
+            console.log('goStart')
+            // var url = window.location.href;
+            // url = url.replace(/((?<=page=).*?(?=&))/, 1)
+            // window.location.href = url;
+        }
+
+        function goBefore() {
+            // console.log('Number(document.getElementById(pageHiddenInput).value) :', Number(document.getElementById('pageHiddenInput').value))
+            if (Number(document.getElementById('pageHiddenInput').value) != 1) {
+                var url = window.location.href
+                url = url.replace(/((?<=page=).*)/, Number(document.getElementById('pageHiddenInput').value) - 1)
+                window.location.href = url
+            }
+        }
+
+        function goNext() {
+            if (window.location.href.toString().includes('&page=')) {
+                // console.log('CONTAINS')
+                var url = window.location.href;
+                var page = Number(document.getElementById('pageHiddenInput').value)
+                // console.log(page)
+                page++
+                // console.log(page)
+                url = url.replace(/((?<=page=).*)/, page)
+                window.location.href = url;
+            } else {
+                // console.log('NOT CONTAINS')
+                var page = Number(document.getElementById('pageHiddenInput').value)
+                page++
+                window.location.href = window.location.href += `&page=${page}` 
+            }
+        }
+
+        function goEnd() {
+            console.log('goEnd')
+            // var url = window.location.href;
+            // url = url.replace(/((?<=page=).*?(?=&))/, 1)
+            // window.location.href = url;
+        }
+
+        function editNbLignes(ev) {
+            var url = window.location.href;
+            url = url.replace(/((?<=nbLignes=).*?(?=&))/, ev.target.value.toString())
+            window.location.href = url;
         }
 
         // ----------------------------------------------------------------------------------------------------
@@ -359,6 +452,16 @@
             if (tokenOk) {
                 document.getElementById('formSrcComponent').style.display = ''
                 document.getElementById('tokenHiddenInput').value = token
+
+                const nbLignes = new URLSearchParams(window.location.search).get("nbLignes");
+                // console.log('nbLignes', nbLignes)
+                if (nbLignes != "" && nbLignes != null) {
+                    document.getElementById('nbLignesHiddenInput').value = nbLignes
+                }
+                else {
+                    document.getElementById('nbLignesHiddenInput').value = '25'
+                }
+
                 document.getElementById('formSrc.guid').value = new URLSearchParams(window.location.search).get("guid")
                 document.getElementById('formSrc.first').value = new URLSearchParams(window.location.search).get("first")
                 document.getElementById('formSrc.last').value = new URLSearchParams(window.location.search).get("last")
@@ -387,6 +490,41 @@
             }
 
             if (new URLSearchParams(window.location.search).get("search")) {
+                
+                const page = new URLSearchParams(window.location.search).get("page");
+                console.log('page :', page)
+                if (page != "" && page != null) {
+                    document.getElementById('pageHiddenInput').value = page
+                }
+                else {
+                    document.getElementById('pageHiddenInput').value = '1'
+                }
+
+                optionList = [5, 15, 25, 100, 500, 1000, 5000, 10000, 50000, 100000]
+                listInputNbLignes = document.getElementsByClassName('inputNbLignes')
+                for (let index = 0; index < listInputNbLignes.length; index++) {
+                    const inputNbLignes = listInputNbLignes[index];
+                    optionList.forEach((element) => {
+                        option = document.createElement('option');
+                        option.innerHTML = element
+                        if (element == document.getElementById('nbLignesHiddenInput').value) {
+                            option.selected = true
+                        }
+                        inputNbLignes.append(option)
+                    })
+                }
+                
+                paginationBigRightSpanS = document.getElementsByClassName('paginationBigRightSpan')
+                for (let index = 0; index < paginationBigRightSpanS.length; index++) {
+                    const paginationBigRightSpan = paginationBigRightSpanS[index];
+                    const max = Number(document.getElementById('pageHiddenInput').value) * Number(document.getElementById('selectNbLignes').value)
+                    const min = max + 1 - Number(document.getElementById('selectNbLignes').value)
+                    // console.log(max)
+                    const text = `${min} - ${max}`
+                    // (Number(document.getElementById('pageHiddenInput').value) - 1) * Number(document.getElementById('selectNbLignes').value)
+                    paginationBigRightSpan.innerHTML = text
+                }
+                
                 search(
                     token,
                     new URLSearchParams(window.location.search).get("guid"),
@@ -400,6 +538,7 @@
 
         }
         start()
+        
     </script>
 
 </body>

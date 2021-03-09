@@ -27,10 +27,10 @@ export interface ITokenTestResponse {
     validity?: boolean
 }
 
-export interface ITolenValidityResponse {
+export interface ITokenValidityResponse {
     status: string,
     performanceMs: number,
-    responseSize: number,
+    responseRealSize: number,
     response?: [
         {
             validity: boolean,
@@ -53,7 +53,7 @@ export interface IClient {
 export interface IClientResult {
     status: string,
     performanceMs: number,
-    responseSize: number,
+    responseRealSize: number,
     response?: IClient[]
     errors?: IError[]
 }
